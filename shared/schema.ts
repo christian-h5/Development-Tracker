@@ -86,6 +86,9 @@ export type PhaseUnit = typeof phaseUnits.$inferSelect;
 export type InsertCalculatorScenario = z.infer<typeof insertCalculatorScenarioSchema>;
 export type CalculatorScenario = typeof calculatorScenarios.$inferSelect;
 
+export type IndividualUnit = typeof individualUnits.$inferSelect;
+export type InsertIndividualUnit = typeof individualUnits.$inferInsert;
+
 // Extended types for UI
 export type PhaseWithUnits = Phase & {
   units: (PhaseUnit & { unitType: UnitType })[];

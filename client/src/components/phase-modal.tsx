@@ -311,7 +311,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                           </Button>
                         </div>
                         
-                        <div className="grid grid-cols-1 gap-3">
+                        <div className="grid grid-cols-2 gap-3">
                           <div>
                             <Label className="text-xs">Quantity</Label>
                             <Input
@@ -319,6 +319,16 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                               value={config.quantity}
                               onChange={(e) => updateUnitConfig(index, 'quantity', parseInt(e.target.value) || 0)}
                               className="text-sm"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Base Sales Price</Label>
+                            <Input
+                              type="number"
+                              value={config.salesPrice}
+                              onChange={(e) => updateUnitConfig(index, 'salesPrice', parseFloat(e.target.value) || 0)}
+                              className="text-sm"
+                              placeholder="Base price per unit"
                             />
                           </div>
                         </div>
@@ -347,16 +357,6 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                     </div>
                     
                     <div className="space-y-3">
-                      <div>
-                        <Label className="text-sm">Sales Price</Label>
-                        <Input
-                          type="number"
-                          value={config.salesPrice}
-                          onChange={(e) => updateUnitConfig(index, 'salesPrice', parseFloat(e.target.value) || 0)}
-                          placeholder="Enter amount"
-                        />
-                      </div>
-                      
                       <CostInputToggle
                         label="Hard Costs"
                         value={config.hardCosts.toString()}

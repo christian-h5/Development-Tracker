@@ -68,11 +68,14 @@ export default function PhaseTable({ phases, onEditPhase, onViewPhase }: PhaseTa
 
     const netProfit = totalRevenue - totalCosts;
     const margin = calculateMargin(totalRevenue, netProfit);
+    const roi = totalCosts > 0 ? (netProfit / totalCosts) * 100 : 0;
 
     return {
       totalCosts,
       totalRevenue,
+      netProfit,
       margin,
+      roi,
       unitTypes
     };
   };
@@ -93,6 +96,8 @@ export default function PhaseTable({ phases, onEditPhase, onViewPhase }: PhaseTa
                 <TableHead>Unit Types</TableHead>
                 <TableHead>Total Cost</TableHead>
                 <TableHead>Total Revenue</TableHead>
+                <TableHead>Total Profit</TableHead>
+                <TableHead>ROI</TableHead>
                 <TableHead>Margin</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -128,6 +133,18 @@ export default function PhaseTable({ phases, onEditPhase, onViewPhase }: PhaseTa
                     <TableCell className={isProjected ? "text-gray-500" : ""}>
                       {formatCurrency(metrics.totalRevenue)}
                       {isProjected && "*"}
+                    </TableCell>
+                    <TableCell className={isProjected ? "text-gray-500" : ""}>
+                      <span className={`font-semibold ${metrics.netProfit >= 0 ? "text-green-600" : "text-red-600"}`}>
+                        {formatCurrency(metrics.netProfit)}
+                        {isProjected && "*"}
+                      </span>
+                    </TableCell>
+                    <TableCell className={isProjected ? "text-gray-500" : ""}>
+                      <span className={`font-semibold ${metrics.roi >= 0 ? "text-green-600" : "text-red-600"}`}>
+                        {formatPercent(metrics.roi)}
+                        {isProjected && "*"}
+                      </span>
                     </TableCell>
                     <TableCell>
                       <span className={`font-semibold ${isProjected ? "text-gray-500" : "text-success"}`}>

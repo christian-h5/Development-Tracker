@@ -30,11 +30,11 @@ export default function CostInputToggle({
   salesPrice = 0
 }: CostInputToggleProps) {
   const numericValue = parseFloat(value) || 0;
-  
+
   // Calculate the converted value
   const getConvertedValue = () => {
     if (!numericValue || !squareFootage) return null;
-    
+
     if (inputMethod === 'perSqFt') {
       // Show per unit equivalent
       return numericValue * squareFootage;
@@ -47,7 +47,7 @@ export default function CostInputToggle({
   // Calculate tiered commission if this is sales costs
   const calculateTieredCommission = () => {
     if (!isSalesCosts || !salesPrice) return null;
-    
+
     const first100k = Math.min(salesPrice, 100000);
     const balance = Math.max(0, salesPrice - 100000);
     return (first100k * 0.05) + (balance * 0.03);
@@ -55,11 +55,11 @@ export default function CostInputToggle({
 
   const convertedValue = getConvertedValue();
   const tieredCommission = calculateTieredCommission();
-  
+
   return (
     <div className="space-y-2">
       <Label className="text-sm font-medium">{label}</Label>
-      
+
       {isSalesCosts && (
         <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
           Tiered Commission: 5% on first $100k, 3% on balance
@@ -73,7 +73,7 @@ export default function CostInputToggle({
           )}
         </div>
       )}
-      
+
       <div className="flex items-center space-x-2">
         <div className="flex rounded-md border border-gray-300 overflow-hidden">
           <Button
@@ -99,7 +99,7 @@ export default function CostInputToggle({
             Per Sq Ft
           </Button>
         </div>
-        
+
         <Input
           type="number"
           value={value}
@@ -108,12 +108,12 @@ export default function CostInputToggle({
           disabled={disabled}
           className="flex-1"
         />
-        
+
         <span className="text-xs text-gray-500 min-w-[60px]">
           {inputMethod === 'perUnit' ? '/ unit' : '/ sq ft'}
         </span>
       </div>
-      
+
       {convertedValue !== null && numericValue > 0 && (
         <div className="text-xs text-gray-500 ml-2">
           = ${convertedValue.toLocaleString('en-US', { 

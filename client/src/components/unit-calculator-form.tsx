@@ -112,7 +112,7 @@ export default function UnitCalculatorForm() {
     // Use manual sales costs if provided, otherwise calculate tiered commission based on base case price
     let sales = convertCostPerMethod(parseFloat(salesCosts) || 0, salesCostsInputMethod, sqFt);
     if (!salesCosts || parseFloat(salesCosts) === 0) {
-      const basePrice = parseFloat(scenario2Price) || 0;
+      const basePrice = parseFloat(scenario1Price) || 0;
       if (basePrice > 0) {
         sales = calculateSalesCosts(basePrice);
       }
@@ -130,10 +130,10 @@ export default function UnitCalculatorForm() {
     const lawyerFee = convertCostPerMethod(parseFloat(lawyerFees) || 0, lawyerFeesInputMethod, sqFt);
     
     const scenarios = [
-      { label: "Conservative", price: parseFloat(scenario1Price) || 0 },
-      { label: "Base Case", price: parseFloat(scenario2Price) || 0 },
-      { label: "Optimistic", price: parseFloat(scenario3Price) || 0 },
-      { label: "Premium", price: parseFloat(scenario4Price) || 0 },
+      { label: "Base Case", price: parseFloat(scenario1Price) || 0 },
+      { label: "Scenario 2", price: parseFloat(scenario2Price) || 0 },
+      { label: "Scenario 3", price: parseFloat(scenario3Price) || 0 },
+      { label: "Scenario 4", price: parseFloat(scenario4Price) || 0 },
     ].filter(s => s.price > 0);
 
     const calculated = scenarios.map(scenario => {
@@ -322,7 +322,7 @@ export default function UnitCalculatorForm() {
             
             <div className="space-y-4">
               <div>
-                <Label htmlFor="scenario1">Scenario 1 - Conservative</Label>
+                <Label htmlFor="scenario1">Base Case</Label>
                 <Input
                   id="scenario1"
                   type="number"
@@ -333,7 +333,7 @@ export default function UnitCalculatorForm() {
               </div>
               
               <div>
-                <Label htmlFor="scenario2">Scenario 2 - Base Case</Label>
+                <Label htmlFor="scenario2">Scenario 2</Label>
                 <Input
                   id="scenario2"
                   type="number"
@@ -344,7 +344,7 @@ export default function UnitCalculatorForm() {
               </div>
               
               <div>
-                <Label htmlFor="scenario3">Scenario 3 - Optimistic</Label>
+                <Label htmlFor="scenario3">Scenario 3</Label>
                 <Input
                   id="scenario3"
                   type="number"
@@ -355,7 +355,7 @@ export default function UnitCalculatorForm() {
               </div>
               
               <div>
-                <Label htmlFor="scenario4">Scenario 4 - Premium</Label>
+                <Label htmlFor="scenario4">Scenario 4</Label>
                 <Input
                   id="scenario4"
                   type="number"
