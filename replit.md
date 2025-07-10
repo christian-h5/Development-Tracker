@@ -1,0 +1,120 @@
+# DevTracker Pro - Real Estate Development Project Management System
+
+## Overview
+
+DevTracker Pro is a full-stack web application designed for real estate development project management. It provides tools for tracking development phases, managing unit types, calculating profitability scenarios, and monitoring project progress. The application features a modern React frontend with a Node.js/Express backend, using PostgreSQL for data persistence.
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React 18 with TypeScript
+- **Routing**: Wouter for client-side routing
+- **UI Framework**: Radix UI components with shadcn/ui design system
+- **Styling**: Tailwind CSS with CSS variables for theming
+- **State Management**: TanStack Query (React Query) for server state management
+- **Build Tool**: Vite for development and production builds
+
+### Backend Architecture
+- **Runtime**: Node.js with Express.js framework
+- **Language**: TypeScript with ES modules
+- **API Pattern**: RESTful API design
+- **Request Handling**: Express middleware for JSON parsing, logging, and error handling
+- **Development**: Hot reloading with Vite integration
+
+### Database Architecture
+- **Database**: PostgreSQL (configured for Neon serverless)
+- **ORM**: Drizzle ORM with TypeScript schema definitions
+- **Migration Strategy**: Drizzle Kit for schema migrations
+- **Schema Validation**: Zod for runtime type validation
+
+## Key Components
+
+### Core Domain Models
+1. **Projects**: Top-level development projects with metadata
+2. **Phases**: Individual development phases within projects (up to 12 phases)
+3. **Unit Types**: Reusable unit configurations with square footage
+4. **Phase Units**: Unit allocations within phases with cost breakdowns
+5. **Calculator Scenarios**: Profitability analysis scenarios for unit types
+
+### Frontend Components
+- **Navigation System**: Header-based navigation between Project Tracking and Unit Calculator
+- **Project Dashboard**: Summary metrics and phase overview
+- **Phase Management**: Modal-based CRUD operations for phases and units
+- **Unit Calculator**: Interactive profitability analysis tool
+- **Data Tables**: Comprehensive phase and unit listing with financial metrics
+
+### Backend Services
+- **Storage Layer**: Abstracted storage interface with in-memory implementation
+- **Route Handlers**: RESTful endpoints for all CRUD operations
+- **Validation**: Schema-based request validation using Zod
+- **Error Handling**: Centralized error handling with proper HTTP status codes
+
+## Data Flow
+
+### Project Management Flow
+1. User creates/selects a project
+2. Project dashboard displays summary metrics
+3. User manages phases through modal interfaces
+4. Each phase contains multiple unit configurations
+5. Financial calculations update in real-time
+
+### Unit Calculator Flow
+1. User selects unit type and inputs costs
+2. System calculates multiple pricing scenarios
+3. Profitability analysis displays margins and profit per square foot
+4. Scenarios can be saved for future reference
+
+### API Communication
+- Frontend uses TanStack Query for API state management
+- RESTful endpoints handle CRUD operations
+- Real-time calculations performed client-side
+- Server validates all inputs using Zod schemas
+
+## External Dependencies
+
+### Core Dependencies
+- **@neondatabase/serverless**: PostgreSQL database connectivity
+- **drizzle-orm & drizzle-kit**: Database ORM and migration tools
+- **@tanstack/react-query**: Server state management
+- **wouter**: Lightweight React routing
+- **@radix-ui/***: Accessible UI component primitives
+- **tailwindcss**: Utility-first CSS framework
+- **zod**: Schema validation library
+
+### Development Tools
+- **vite**: Build tool and development server
+- **typescript**: Type safety and enhanced development experience
+- **esbuild**: Production bundling for server code
+- **@replit/vite-plugin-***: Replit-specific development enhancements
+
+## Deployment Strategy
+
+### Development Environment
+- Vite development server with HMR for frontend
+- TSX for TypeScript execution in development
+- Integrated development experience with Replit tooling
+
+### Production Build
+- Vite builds optimized client bundle to `dist/public`
+- ESBuild compiles server TypeScript to `dist/index.js`
+- Single Node.js process serves both API and static assets
+
+### Database Setup
+- Drizzle migrations manage schema changes
+- Environment variable `DATABASE_URL` configures database connection
+- PostgreSQL dialect with Neon serverless compatibility
+
+### Key Architectural Decisions
+
+1. **Monorepo Structure**: Shared types and schemas between client/server in `shared/` directory
+2. **Type Safety**: End-to-end TypeScript with runtime validation using Zod
+3. **Component Architecture**: Radix UI primitives with custom styling for consistency
+4. **State Management**: Server state via React Query, minimal local state
+5. **Database Strategy**: Drizzle ORM chosen for type safety and migration management
+6. **Development Experience**: Vite integration with Express for seamless full-stack development
+
+The application prioritizes developer experience, type safety, and maintainable code structure while providing a responsive and intuitive user interface for real estate development project management.
