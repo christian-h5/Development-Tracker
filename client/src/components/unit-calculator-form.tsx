@@ -291,7 +291,7 @@ export default function UnitCalculatorForm() {
               />
 
               <CostInputToggle
-                label="Sales Costs (Commission + Marketing + Legal)"
+                label="Sales Costs (Commission + Legal)"
                 value={salesCosts}
                 onChange={setSalesCosts}
                 inputMethod={salesCostsInputMethod}
