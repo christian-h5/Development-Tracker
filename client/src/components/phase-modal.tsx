@@ -150,8 +150,15 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
     const softCosts = convertCostPerMethod(config.softCosts, config.softCostsInputMethod, unitType.squareFootage);
     const landCosts = convertCostPerMethod(config.landCosts, config.landCostsInputMethod, unitType.squareFootage);
     const contingencyCosts = convertCostPerMethod(config.contingencyCosts, config.contingencyCostsInputMethod, unitType.squareFootage);
-    const salesCosts = convertCostPerMethod(config.salesCosts, config.salesCostsInputMethod, unitType.squareFootage);
     const lawyerFees = convertCostPerMethod(config.lawyerFees, config.lawyerFeesInputMethod, unitType.squareFootage);
+
+    // Use manual sales costs if provided, otherwise calculate tiered commission
+    let salesCosts = convertCostPerMethod(config.salesCosts, config.salesCostsInputMethod, unitType.squareFootage);
+    if (config.salesCosts === 0 && config.salesPrice > 0) {
+      const first100k = Math.min(config.salesPrice, 100000);
+      const balance = Math.max(0, config.salesPrice - 100000);
+      salesCosts = (first100k * 0.05) + (balance * 0.03);
+    }
 
     const totalCosts = hardCosts + softCosts + landCosts + contingencyCosts + salesCosts + lawyerFees;
     const netProfit = config.salesPrice - totalCosts;
@@ -340,6 +347,16 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                     </div>
                     
                     <div className="space-y-3">
+                      <div>
+                        <Label className="text-sm">Sales Price</Label>
+                        <Input
+                          type="number"
+                          value={config.salesPrice}
+                          onChange={(e) => updateUnitConfig(index, 'salesPrice', parseFloat(e.target.value) || 0)}
+                          placeholder="Enter amount"
+                        />
+                      </div>
+                      
                       <CostInputToggle
                         label="Hard Costs"
                         value={config.hardCosts.toString()}
@@ -371,23 +388,15 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                       />
                       
                       <CostInputToggle
-                        label="Contingency/Other Costs"
-                        value={config.contingencyCosts.toString()}
-                        onChange={(value) => updateUnitConfig(index, 'contingencyCosts', parseFloat(value) || 0)}
-                        inputMethod={config.contingencyCostsInputMethod}
-                        onToggleMethod={(method) => updateUnitConfig(index, 'contingencyCostsInputMethod', method)}
-                        placeholder="Enter amount"
-                        squareFootage={unitType?.squareFootage || 1}
-                      />
-                      
-                      <CostInputToggle
-                        label="Sales Costs"
+                        label="Sales Costs (5% on first $100k, 3% on balance)"
                         value={config.salesCosts.toString()}
                         onChange={(value) => updateUnitConfig(index, 'salesCosts', parseFloat(value) || 0)}
                         inputMethod={config.salesCostsInputMethod}
                         onToggleMethod={(method) => updateUnitConfig(index, 'salesCostsInputMethod', method)}
                         placeholder="Enter amount"
                         squareFootage={unitType?.squareFootage || 1}
+                        isSalesCosts={true}
+                        salesPrice={config.salesPrice}
                       />
                       
                       <CostInputToggle
@@ -400,15 +409,15 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                         squareFootage={unitType?.squareFootage || 1}
                       />
                       
-                      <div>
-                        <Label className="text-sm">Sales Price</Label>
-                        <Input
-                          type="number"
-                          value={config.salesPrice}
-                          onChange={(e) => updateUnitConfig(index, 'salesPrice', parseFloat(e.target.value) || 0)}
-                          placeholder="Enter amount"
-                        />
-                      </div>
+                      <CostInputToggle
+                        label="Contingency/Other Costs"
+                        value={config.contingencyCosts.toString()}
+                        onChange={(value) => updateUnitConfig(index, 'contingencyCosts', parseFloat(value) || 0)}
+                        inputMethod={config.contingencyCostsInputMethod}
+                        onToggleMethod={(method) => updateUnitConfig(index, 'contingencyCostsInputMethod', method)}
+                        placeholder="Enter amount"
+                        squareFootage={unitType?.squareFootage || 1}
+                      />
                     </div>
 
                     {/* Summary */}

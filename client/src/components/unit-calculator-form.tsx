@@ -107,8 +107,17 @@ export default function UnitCalculatorForm() {
     const soft = convertCostPerMethod(parseFloat(softCosts) || 0, softCostsInputMethod, sqFt);
     const land = convertCostPerMethod(parseFloat(landCosts) || 0, landCostsInputMethod, sqFt);
     const contingency = convertCostPerMethod(parseFloat(contingencyCosts) || 0, contingencyCostsInputMethod, sqFt);
-    const sales = convertCostPerMethod(parseFloat(salesCosts) || 0, salesCostsInputMethod, sqFt);
     const lawyer = convertCostPerMethod(parseFloat(lawyerFees) || 0, lawyerFeesInputMethod, sqFt);
+    
+    // Use manual sales costs if provided, otherwise calculate tiered commission based on base case price
+    let sales = convertCostPerMethod(parseFloat(salesCosts) || 0, salesCostsInputMethod, sqFt);
+    if (!salesCosts || parseFloat(salesCosts) === 0) {
+      const basePrice = parseFloat(scenario2Price) || 0;
+      if (basePrice > 0) {
+        sales = calculateSalesCosts(basePrice);
+      }
+    }
+    
     return hard + soft + land + contingency + sales + lawyer;
   };
 
@@ -118,7 +127,6 @@ export default function UnitCalculatorForm() {
     const softCost = convertCostPerMethod(parseFloat(softCosts) || 0, softCostsInputMethod, sqFt);
     const landCost = convertCostPerMethod(parseFloat(landCosts) || 0, landCostsInputMethod, sqFt);
     const contingencyCost = convertCostPerMethod(parseFloat(contingencyCosts) || 0, contingencyCostsInputMethod, sqFt);
-    const salesCost = convertCostPerMethod(parseFloat(salesCosts) || 0, salesCostsInputMethod, sqFt);
     const lawyerFee = convertCostPerMethod(parseFloat(lawyerFees) || 0, lawyerFeesInputMethod, sqFt);
     
     const scenarios = [
@@ -129,6 +137,12 @@ export default function UnitCalculatorForm() {
     ].filter(s => s.price > 0);
 
     const calculated = scenarios.map(scenario => {
+      // Use manual sales costs if provided, otherwise calculate tiered commission
+      let salesCost = convertCostPerMethod(parseFloat(salesCosts) || 0, salesCostsInputMethod, sqFt);
+      if (!salesCosts || parseFloat(salesCosts) === 0) {
+        salesCost = calculateSalesCosts(scenario.price);
+      }
+      
       const totalCosts = hardCost + softCost + landCost + contingencyCost + salesCost + lawyerFee;
       const netProfit = scenario.price - totalCosts;
       const margin = calculateMargin(scenario.price, netProfit);
@@ -251,21 +265,14 @@ export default function UnitCalculatorForm() {
               />
               
               <CostInputToggle
-                label="Contingency/Other Costs"
-                value={contingencyCosts}
-                onChange={setContingencyCosts}
-                inputMethod={contingencyCostsInputMethod}
-                onToggleMethod={setContingencyCostsInputMethod}
-                squareFootage={parseFloat(squareFootage) || 1}
-              />
-              
-              <CostInputToggle
-                label="Sales Costs"
+                label="Sales Costs (5% on first $100k, 3% on balance)"
                 value={salesCosts}
                 onChange={setSalesCosts}
                 inputMethod={salesCostsInputMethod}
                 onToggleMethod={setSalesCostsInputMethod}
                 squareFootage={parseFloat(squareFootage) || 1}
+                isSalesCosts={true}
+                salesPrice={parseFloat(scenario2Price) || 0}
               />
               
               <CostInputToggle
@@ -274,6 +281,15 @@ export default function UnitCalculatorForm() {
                 onChange={setLawyerFees}
                 inputMethod={lawyerFeesInputMethod}
                 onToggleMethod={setLawyerFeesInputMethod}
+                squareFootage={parseFloat(squareFootage) || 1}
+              />
+              
+              <CostInputToggle
+                label="Contingency/Other Costs"
+                value={contingencyCosts}
+                onChange={setContingencyCosts}
+                inputMethod={contingencyCostsInputMethod}
+                onToggleMethod={setContingencyCostsInputMethod}
                 squareFootage={parseFloat(squareFootage) || 1}
               />
             </div>

@@ -13,6 +13,8 @@ interface CostInputToggleProps {
   disabled?: boolean;
   placeholder?: string;
   squareFootage?: number;
+  isSalesCosts?: boolean;
+  salesPrice?: number;
 }
 
 export default function CostInputToggle({
@@ -23,7 +25,9 @@ export default function CostInputToggle({
   onToggleMethod,
   disabled = false,
   placeholder = "Enter amount",
-  squareFootage = 1
+  squareFootage = 1,
+  isSalesCosts = false,
+  salesPrice = 0
 }: CostInputToggleProps) {
   const numericValue = parseFloat(value) || 0;
   
@@ -40,11 +44,35 @@ export default function CostInputToggle({
     }
   };
 
+  // Calculate tiered commission if this is sales costs
+  const calculateTieredCommission = () => {
+    if (!isSalesCosts || !salesPrice) return null;
+    
+    const first100k = Math.min(salesPrice, 100000);
+    const balance = Math.max(0, salesPrice - 100000);
+    return (first100k * 0.05) + (balance * 0.03);
+  };
+
   const convertedValue = getConvertedValue();
+  const tieredCommission = calculateTieredCommission();
   
   return (
     <div className="space-y-2">
       <Label className="text-sm font-medium">{label}</Label>
+      
+      {isSalesCosts && (
+        <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+          Tiered Commission: 5% on first $100k, 3% on balance
+          {tieredCommission !== null && salesPrice > 0 && (
+            <div className="mt-1 font-medium">
+              Auto-calculated: ${tieredCommission.toLocaleString('en-US', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+              })}
+            </div>
+          )}
+        </div>
+      )}
       
       <div className="flex items-center space-x-2">
         <div className="flex rounded-md border border-gray-300 overflow-hidden">
@@ -76,7 +104,7 @@ export default function CostInputToggle({
           type="number"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
+          placeholder={isSalesCosts ? "Override auto-calculation" : placeholder}
           disabled={disabled}
           className="flex-1"
         />
