@@ -448,7 +448,7 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
                       />
 
                       <CostInputToggle
-                        label="Sales Costs (5% on first $100k, 3% on balance)"
+                        label="Sales Costs (Commission + Marketing + Legal)"
                         value={config.salesCosts.toString()}
                         onChange={(value) => updateUnitConfig(index, 'salesCosts', parseFloat(value) || 0)}
                         inputMethod={config.salesCostsInputMethod}
@@ -457,16 +457,11 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
                         squareFootage={unitType?.squareFootage || 1}
                         isSalesCosts={true}
                         salesPrice={config.salesPrice}
-                      />
-
-                      <CostInputToggle
-                        label="Lawyer Fees"
-                        value={config.lawyerFees.toString()}
-                        onChange={(value) => updateUnitConfig(index, 'lawyerFees', parseFloat(value) || 0)}
-                        inputMethod={config.lawyerFeesInputMethod}
-                        onToggleMethod={(method) => updateUnitConfig(index, 'lawyerFeesInputMethod', method)}
-                        placeholder="Enter amount"
-                        squareFootage={unitType?.squareFootage || 1}
+                        lawyerFees={config.lawyerFees.toString()}
+                        onLawyerFeesChange={(value) => updateUnitConfig(index, 'lawyerFees', parseFloat(value) || 0)}
+                        tier1Rate={5}
+                        tier2Rate={3}
+                        onTierRateChange={() => {}}
                       />
 
                       <CostInputToggle

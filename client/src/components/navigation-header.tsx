@@ -20,23 +20,35 @@ export default function NavigationHeader() {
               </h1>
             </div>
           </div>
-          <nav className="flex space-x-8">
-            <Button
-              variant={isProjectActive ? "default" : "ghost"}
-              className={isProjectActive ? "bg-primary text-white" : "text-gray-500 hover:text-gray-700"}
-              onClick={() => setLocation("/project-tracking")}
-            >
-              <ChartLine className="mr-2 h-4 w-4" />
-              Project Tracking
-            </Button>
-            <Button
-              variant={isCalculatorActive ? "default" : "ghost"}
-              className={isCalculatorActive ? "bg-primary text-white" : "text-gray-500 hover:text-gray-700"}
-              onClick={() => setLocation("/unit-calculator")}
-            >
-              <Calculator className="mr-2 h-4 w-4" />
-              Unit Calculator
-            </Button>
+          <nav className="flex">
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`px-6 py-2 rounded-md transition-all font-medium ${
+                  isProjectActive 
+                    ? "bg-white text-blue-600 shadow-sm" 
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
+                onClick={() => setLocation("/project-tracking")}
+              >
+                <ChartLine className="mr-2 h-4 w-4" />
+                Project Tracking
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`px-6 py-2 rounded-md transition-all font-medium ${
+                  isCalculatorActive 
+                    ? "bg-white text-blue-600 shadow-sm" 
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
+                onClick={() => setLocation("/unit-calculator")}
+              >
+                <Calculator className="mr-2 h-4 w-4" />
+                Unit Calculator
+              </Button>
+            </div>
           </nav>
         </div>
       </div>

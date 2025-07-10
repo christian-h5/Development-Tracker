@@ -17,6 +17,11 @@ interface CostInputToggleProps {
   salesPrice?: number;
   isContingency?: boolean;
   totalCosts?: number;
+  lawyerFees?: string;
+  onLawyerFeesChange?: (value: string) => void;
+  tier1Rate?: number;
+  tier2Rate?: number;
+  onTierRateChange?: (tier: 1 | 2, rate: number) => void;
 }
 
 export default function CostInputToggle({
@@ -31,7 +36,12 @@ export default function CostInputToggle({
   isSalesCosts = false,
   salesPrice = 0,
   isContingency = false,
-  totalCosts = 0
+  totalCosts = 0,
+  lawyerFees = "0",
+  onLawyerFeesChange,
+  tier1Rate = 5,
+  tier2Rate = 3,
+  onTierRateChange
 }: CostInputToggleProps) {
   const numericValue = parseFloat(value) || 0;
 
@@ -58,7 +68,7 @@ export default function CostInputToggle({
 
     const first100k = Math.min(salesPrice, 100000);
     const balance = Math.max(0, salesPrice - 100000);
-    return (first100k * 0.05) + (balance * 0.03);
+    return (first100k * (tier1Rate / 100)) + (balance * (tier2Rate / 100));
   };
 
   const convertedValue = getConvertedValue();
@@ -71,16 +81,64 @@ export default function CostInputToggle({
       </Label>
 
       {isSalesCosts && (
-        <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-          Tiered Commission: 5% on first $100k, 3% on balance
-          {tieredCommission !== null && salesPrice > 0 && (
-            <div className="mt-1 font-medium">
-              Auto-calculated: ${tieredCommission.toLocaleString('en-US', { 
-                minimumFractionDigits: 2, 
-                maximumFractionDigits: 2 
-              })}
+        <div className="space-y-3">
+          <div className="text-xs text-blue-600 bg-blue-50 p-3 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-medium">Tiered Commission Structure</span>
             </div>
-          )}
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <div>
+                <label className="block text-xs font-medium mb-1">First $100k Rate</label>
+                <div className="flex items-center">
+                  <Input
+                    type="number"
+                    value={tier1Rate}
+                    onChange={(e) => onTierRateChange && onTierRateChange(1, parseFloat(e.target.value) || 5)}
+                    className="h-6 text-xs w-16"
+                    step="0.1"
+                    min="0"
+                    max="10"
+                  />
+                  <span className="ml-1 text-xs">%</span>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1">Balance Rate</label>
+                <div className="flex items-center">
+                  <Input
+                    type="number"
+                    value={tier2Rate}
+                    onChange={(e) => onTierRateChange && onTierRateChange(2, parseFloat(e.target.value) || 3)}
+                    className="h-6 text-xs w-16"
+                    step="0.1"
+                    min="0"
+                    max="10"
+                  />
+                  <span className="ml-1 text-xs">%</span>
+                </div>
+              </div>
+            </div>
+            {tieredCommission !== null && salesPrice > 0 && (
+              <div className="mt-2 font-medium text-blue-700">
+                Auto-calculated Commission: ${tieredCommission.toLocaleString('en-US', { 
+                  minimumFractionDigits: 2, 
+                  maximumFractionDigits: 2 
+                })}
+              </div>
+            )}
+          </div>
+          
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <label className="block text-xs font-medium mb-2 text-gray-700">Lawyer Fees</label>
+            <Input
+              type="number"
+              value={lawyerFees}
+              onChange={(e) => onLawyerFeesChange && onLawyerFeesChange(e.target.value)}
+              placeholder="Enter lawyer fees"
+              className="h-8 text-sm"
+            />
+            <div className="text-xs text-gray-500 mt-1">Included in total sales costs</div>
+          </div>
         </div>
       )}
 
@@ -101,9 +159,7 @@ export default function CostInputToggle({
           >
             <Home className="w-4 h-4 mr-2" />
             Per Unit
-            {inputMethod === 'perUnit' && (
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></div>
-            )}
+
           </Button>
           <Button
             type="button"
@@ -120,9 +176,7 @@ export default function CostInputToggle({
           >
             <Calculator className="w-4 h-4 mr-2" />
             Per Sq Ft
-            {inputMethod === 'perSqFt' && (
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></div>
-            )}
+
           </Button>
           {isContingency && (
             <Button
@@ -140,9 +194,7 @@ export default function CostInputToggle({
             >
               <span className="text-base font-bold">%</span>
               <span className="ml-1">Percent</span>
-              {inputMethod === 'percentage' && (
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></div>
-              )}
+
             </Button>
           )}
         </div>

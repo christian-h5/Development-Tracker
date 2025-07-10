@@ -43,6 +43,10 @@ export default function UnitCalculatorForm() {
   const [salesCostsInputMethod, setSalesCostsInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
   const [lawyerFeesInputMethod, setLawyerFeesInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
 
+  // Commission tier rates
+  const [tier1Rate, setTier1Rate] = useState(5);
+  const [tier2Rate, setTier2Rate] = useState(3);
+
   // Scenario price states
   const [scenario1Price, setScenario1Price] = useState("");
   const [scenario2Price, setScenario2Price] = useState("");
@@ -287,7 +291,7 @@ export default function UnitCalculatorForm() {
               />
 
               <CostInputToggle
-                label="Sales Costs (5% on first $100k, 3% on balance)"
+                label="Sales Costs (Commission + Marketing + Legal)"
                 value={salesCosts}
                 onChange={setSalesCosts}
                 inputMethod={salesCostsInputMethod}
@@ -295,15 +299,14 @@ export default function UnitCalculatorForm() {
                 squareFootage={parseFloat(squareFootage) || 1}
                 isSalesCosts={true}
                 salesPrice={parseFloat(scenario1Price) || 0}
-              />
-
-              <CostInputToggle
-                label="Lawyer Fees"
-                value={lawyerFees}
-                onChange={setLawyerFees}
-                inputMethod={lawyerFeesInputMethod}
-                onToggleMethod={setLawyerFeesInputMethod}
-                squareFootage={parseFloat(squareFootage) || 1}
+                lawyerFees={lawyerFees}
+                onLawyerFeesChange={setLawyerFees}
+                tier1Rate={tier1Rate}
+                tier2Rate={tier2Rate}
+                onTierRateChange={(tier, rate) => {
+                  if (tier === 1) setTier1Rate(rate);
+                  if (tier === 2) setTier2Rate(rate);
+                }}
               />
 
               <CostInputToggle
