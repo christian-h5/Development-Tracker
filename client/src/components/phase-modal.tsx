@@ -20,6 +20,7 @@ interface PhaseModalProps {
   phase: PhaseWithUnits | null;
   isNew: boolean;
   projectId: number;
+  isOpen: boolean;
   onClose: () => void;
   onSave: () => void;
 }
@@ -44,7 +45,7 @@ interface UnitConfig {
   individualPrices: number[];
 }
 
-export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }: PhaseModalProps) {
+export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, onSave }: PhaseModalProps) {
   const { toast } = useToast();
   const [phaseName, setPhaseName] = useState(phase?.name || "");
   const [phaseStatus, setPhaseStatus] = useState(phase?.status || "future");
@@ -254,7 +255,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
   };
 
   return (
-    <Dialog open onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
