@@ -1,18 +1,13 @@
 import { 
-  projects, phases, unitTypes, phaseUnits, calculatorScenarios, users,
-  type Project, type Phase, type UnitType, type PhaseUnit, type CalculatorScenario, type User, type UpsertUser,
+  projects, phases, unitTypes, phaseUnits, calculatorScenarios,
+  type Project, type Phase, type UnitType, type PhaseUnit, type CalculatorScenario,
   type InsertProject, type InsertPhase, type InsertUnitType, type InsertPhaseUnit, type InsertCalculatorScenario,
   type PhaseWithUnits, type ProjectSummary, type FuturePhaseDefaults, type InsertFuturePhaseDefaults
 } from "@shared/schema";
 
 export interface IStorage {
-  // User operations
-  // (IMPORTANT) these user operations are mandatory for Replit Auth.
-  getUser(id: string): Promise<User | undefined>;
-  upsertUser(user: UpsertUser): Promise<User>;
-  
   // Projects
-  getProjects(userId?: string): Promise<Project[]>;
+  getProjects(): Promise<Project[]>;
   getProject(id: number): Promise<Project | undefined>;
   createProject(project: InsertProject): Promise<Project>;
   updateProject(id: number, project: Partial<InsertProject>): Promise<Project>;
@@ -48,7 +43,6 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<string, User>;
   private projects: Map<number, Project>;
   private phases: Map<number, Phase>;
   private unitTypes: Map<number, UnitType>;
@@ -63,7 +57,6 @@ export class MemStorage implements IStorage {
   private currentFuturePhaseDefaultsId: number;
 
   constructor() {
-    this.users = new Map();
     this.projects = new Map();
     this.phases = new Map();
     this.unitTypes = new Map();
@@ -81,18 +74,32 @@ export class MemStorage implements IStorage {
   }
 
   private initializeDefaultData() {
-    // Create default project
-    const project: Project = {
-      id: 1,
-      name: "Townhome Development Project",
-      description: "Multi-phase townhome development with 12 phases",
-      totalPhases: 12,
-      userId: "demo-user",
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    this.projects.set(1, project);
-    this.currentProjectId = 2;
+    // Create multiple sample projects
+    const projects = [
+      {
+        id: 1,
+        name: "Townhome Development Project",
+        description: "Multi-phase townhome development with 12 phases",
+        totalPhases: 12
+      },
+      {
+        id: 2,
+        name: "Luxury Condo Complex",
+        description: "High-end condominium development in downtown area",
+        totalPhases: 8
+      },
+      {
+        id: 3,
+        name: "Suburban Housing Estate",
+        description: "Family-friendly housing development with amenities",
+        totalPhases: 15
+      }
+    ];
+
+    projects.forEach(project => {
+      this.projects.set(project.id, project);
+    });
+    this.currentProjectId = 4;
 
     // Create default unit types
     const unitTypeA: UnitType = { 
@@ -132,29 +139,7 @@ export class MemStorage implements IStorage {
     this.currentUnitTypeId = 4;
   }
 
-  // User operations
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async upsertUser(userData: UpsertUser): Promise<User> {
-    const user: User = {
-      id: userData.id,
-      email: userData.email ?? null,
-      firstName: userData.firstName ?? null,
-      lastName: userData.lastName ?? null,
-      profileImageUrl: userData.profileImageUrl ?? null,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    this.users.set(userData.id, user);
-    return user;
-  }
-
-  async getProjects(userId?: string): Promise<Project[]> {
-    if (userId) {
-      return Array.from(this.projects.values()).filter(p => p.userId === userId);
-    }
+  async getProjects(): Promise<Project[]> {
     return Array.from(this.projects.values());
   }
 
@@ -167,10 +152,7 @@ export class MemStorage implements IStorage {
       id: this.currentProjectId++,
       name: insertProject.name,
       description: insertProject.description ?? null,
-      totalPhases: insertProject.totalPhases,
-      userId: insertProject.userId,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      totalPhases: insertProject.totalPhases || 12
     };
     this.projects.set(project.id, project);
     return project;
