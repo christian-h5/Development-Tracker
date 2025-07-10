@@ -210,3 +210,45 @@ button[data-variant="ghost"]:hover {
   background-color: hsl(var(--accent)) !important;
   color: hsl(var(--accent-foreground)) !important;
 }
+
+/* Toggle group styling */
+[data-state="on"] {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border: 2px solid hsl(var(--primary)) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-state="off"] {
+  background-color: transparent !important;
+  color: hsl(var(--foreground)) !important;
+  border: 2px solid hsl(var(--border)) !important;
+  box-shadow: none !important;
+}
+
+[data-state="off"]:hover {
+  background-color: hsl(var(--accent)) !important;
+  border-color: hsl(var(--primary)) !important;
+}
+
+/* Switch styling */
+.switch-root {
+  background-color: hsl(var(--input)) !important;
+  border: 2px solid hsl(var(--border)) !important;
+  transition: all 0.2s ease !important;
+}
+
+.switch-root[data-state="checked"] {
+  background-color: hsl(var(--primary)) !important;
+  border-color: hsl(var(--primary)) !important;
+}
+
+.switch-thumb {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  transition: all 0.2s ease !important;
+}
+
+.switch-root[data-state="checked"] .switch-thumb {
+  border-color: hsl(var(--primary-foreground)) !important;
+}
