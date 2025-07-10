@@ -65,8 +65,10 @@ export default function CostInputToggle({
   const tieredCommission = calculateTieredCommission();
 
   return (
-    <div className="space-y-2">
-      <Label className="text-sm font-medium">{label}</Label>
+    <div className="space-y-3 p-4 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
+      <Label className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+        {label}
+      </Label>
 
       {isSalesCosts && (
         <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
@@ -82,64 +84,95 @@ export default function CostInputToggle({
         </div>
       )}
 
-      <div className="flex items-center space-x-2">
-        <div className="flex rounded-md border border-gray-300 overflow-hidden">
+      <div className="flex items-center space-x-3">
+        <div className="flex rounded-lg bg-gray-100 p-1 shadow-sm">
           <Button
             type="button"
-            variant={inputMethod === 'perUnit' ? 'default' : 'secondary'}
             size="sm"
-            className="rounded-none px-3 py-2 text-xs"
+            className={`
+              relative rounded-md px-4 py-2 text-sm font-medium transition-all duration-200
+              ${inputMethod === 'perUnit' 
+                ? 'bg-white text-blue-700 shadow-sm ring-1 ring-blue-200' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }
+            `}
             onClick={() => onToggleMethod('perUnit')}
             disabled={disabled}
           >
-            <Home className="w-3 h-3 mr-1" />
+            <Home className="w-4 h-4 mr-2" />
             Per Unit
+            {inputMethod === 'perUnit' && (
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></div>
+            )}
           </Button>
           <Button
             type="button"
-            variant={inputMethod === 'perSqFt' ? 'default' : 'secondary'}
             size="sm"
-            className="rounded-none px-3 py-2 text-xs"
+            className={`
+              relative rounded-md px-4 py-2 text-sm font-medium transition-all duration-200
+              ${inputMethod === 'perSqFt' 
+                ? 'bg-white text-blue-700 shadow-sm ring-1 ring-blue-200' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }
+            `}
             onClick={() => onToggleMethod('perSqFt')}
             disabled={disabled}
           >
-            <Calculator className="w-3 h-3 mr-1" />
+            <Calculator className="w-4 h-4 mr-2" />
             Per Sq Ft
+            {inputMethod === 'perSqFt' && (
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></div>
+            )}
           </Button>
           {isContingency && (
             <Button
               type="button"
-              variant={inputMethod === 'percentage' ? 'default' : 'secondary'}
               size="sm"
-              className="rounded-none px-3 py-2 text-xs"
+              className={`
+                relative rounded-md px-4 py-2 text-sm font-medium transition-all duration-200
+                ${inputMethod === 'percentage' 
+                  ? 'bg-white text-blue-700 shadow-sm ring-1 ring-blue-200' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }
+              `}
               onClick={() => onToggleMethod('percentage')}
               disabled={disabled}
             >
-              %
+              <span className="text-base font-bold">%</span>
+              <span className="ml-1">Percent</span>
+              {inputMethod === 'percentage' && (
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></div>
+              )}
             </Button>
           )}
         </div>
 
-        <Input
-          type="number"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={isSalesCosts ? "Override auto-calculation" : placeholder}
-          disabled={disabled}
-          className="flex-1"
-        />
-
-        <span className="text-xs text-gray-500 min-w-[60px]">
-          {inputMethod === 'perUnit' ? '/ unit' : inputMethod === 'perSqFt' ? '/ sq ft' : '%'}
-        </span>
+        <div className="flex-1 relative">
+          <Input
+            type="number"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={isSalesCosts ? "Override auto-calculation" : placeholder}
+            disabled={disabled}
+            className="pr-16 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+          />
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500 font-medium">
+            {inputMethod === 'perUnit' ? '/ unit' : inputMethod === 'perSqFt' ? '/ sq ft' : '%'}
+          </div>
+        </div>
       </div>
 
       {convertedValue !== null && numericValue > 0 && (
-        <div className="text-xs text-gray-500 ml-2">
-          = ${convertedValue.toLocaleString('en-US', { 
-            minimumFractionDigits: 0, 
-            maximumFractionDigits: 2 
-          })} {inputMethod === 'perSqFt' ? 'per unit' : inputMethod === 'perUnit' ? 'per sq ft' : 'total'}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 ml-2">
+          <div className="flex items-center text-sm text-blue-700 font-medium">
+            <Calculator className="w-4 h-4 mr-2" />
+            <span>
+              = ${convertedValue.toLocaleString('en-US', { 
+                minimumFractionDigits: 0, 
+                maximumFractionDigits: 2 
+              })} {inputMethod === 'perSqFt' ? 'per unit' : inputMethod === 'perUnit' ? 'per sq ft' : 'total'}
+            </span>
+          </div>
         </div>
       )}
     </div>

@@ -186,7 +186,8 @@ export default function FuturePhaseDefaultsComponent({ projectId }: FuturePhaseD
             value={formData.hardCosts}
             inputMethod={formData.hardCostsInputMethod}
             squareFootage={selectedUnitTypeSquareFootage}
-            onChange={(value, method) => handleCostChange("hardCosts", value, method)}
+            onChange={(value) => handleCostChange("hardCosts", parseFloat(value) || 0, formData.hardCostsInputMethod)}
+            onToggleMethod={(method) => handleCostChange("hardCosts", parseFloat(formData.hardCosts) || 0, method)}
           />
           
           <CostInputToggle
@@ -194,7 +195,8 @@ export default function FuturePhaseDefaultsComponent({ projectId }: FuturePhaseD
             value={formData.softCosts}
             inputMethod={formData.softCostsInputMethod}
             squareFootage={selectedUnitTypeSquareFootage}
-            onChange={(value, method) => handleCostChange("softCosts", value, method)}
+            onChange={(value) => handleCostChange("softCosts", parseFloat(value) || 0, formData.softCostsInputMethod)}
+            onToggleMethod={(method) => handleCostChange("softCosts", parseFloat(formData.softCosts) || 0, method)}
           />
           
           <CostInputToggle
@@ -202,7 +204,8 @@ export default function FuturePhaseDefaultsComponent({ projectId }: FuturePhaseD
             value={formData.landCosts}
             inputMethod={formData.landCostsInputMethod}
             squareFootage={selectedUnitTypeSquareFootage}
-            onChange={(value, method) => handleCostChange("landCosts", value, method)}
+            onChange={(value) => handleCostChange("landCosts", parseFloat(value) || 0, formData.landCostsInputMethod)}
+            onToggleMethod={(method) => handleCostChange("landCosts", parseFloat(formData.landCosts) || 0, method)}
           />
           
           <CostInputToggle
@@ -210,7 +213,8 @@ export default function FuturePhaseDefaultsComponent({ projectId }: FuturePhaseD
             value={formData.salesCosts}
             inputMethod={formData.salesCostsInputMethod}
             squareFootage={selectedUnitTypeSquareFootage}
-            onChange={(value, method) => handleCostChange("salesCosts", value, method)}
+            onChange={(value) => handleCostChange("salesCosts", parseFloat(value) || 0, formData.salesCostsInputMethod)}
+            onToggleMethod={(method) => handleCostChange("salesCosts", parseFloat(formData.salesCosts) || 0, method)}
           />
           
           <CostInputToggle
@@ -218,7 +222,8 @@ export default function FuturePhaseDefaultsComponent({ projectId }: FuturePhaseD
             value={formData.lawyerFees}
             inputMethod={formData.lawyerFeesInputMethod}
             squareFootage={selectedUnitTypeSquareFootage}
-            onChange={(value, method) => handleCostChange("lawyerFees", value, method)}
+            onChange={(value) => handleCostChange("lawyerFees", parseFloat(value) || 0, formData.lawyerFeesInputMethod)}
+            onToggleMethod={(method) => handleCostChange("lawyerFees", parseFloat(formData.lawyerFees) || 0, method)}
           />
           
           <CostInputToggle
@@ -226,7 +231,9 @@ export default function FuturePhaseDefaultsComponent({ projectId }: FuturePhaseD
             value={formData.contingencyCosts}
             inputMethod={formData.contingencyCostsInputMethod}
             squareFootage={selectedUnitTypeSquareFootage}
-            onChange={(value, method) => handleCostChange("contingencyCosts", value, method)}
+            onChange={(value) => handleCostChange("contingencyCosts", parseFloat(value) || 0, formData.contingencyCostsInputMethod)}
+            onToggleMethod={(method) => handleCostChange("contingencyCosts", parseFloat(formData.contingencyCosts) || 0, method)}
+            isContingency={true}
           />
         </div>
 
