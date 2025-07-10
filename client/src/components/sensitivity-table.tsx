@@ -1,13 +1,11 @@
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown } from "lucide-react";
-import { formatCurrency, formatPercent, calculateROI } from "@/lib/calculations";
-import { useState } from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 interface ScenarioData {
   label: string;
@@ -17,14 +15,25 @@ interface ScenarioData {
   netProfit: number;
   margin: number;
   profitPerSqFt: number;
-  roi?: number;
+  roi: number;
 }
+import { TrendingUp, TrendingDown } from "lucide-react";
+import { formatCurrency, formatPercent, calculateROI } from "@/lib/calculations";
+
 
 interface SensitivityTableProps {
   scenarios: ScenarioData[];
-  basePrice?: number;
   onGenerateSensitivity?: (scenarios: ScenarioData[]) => void;
 }
+
+const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
 
 export default function SensitivityTable({ scenarios, basePrice = 0, onGenerateSensitivity }: SensitivityTableProps) {
   const [sensitivityType, setSensitivityType] = useState<'percentage' | 'dollar'>('percentage');
@@ -33,16 +42,16 @@ export default function SensitivityTable({ scenarios, basePrice = 0, onGenerateS
 
   const generateSensitivityScenarios = () => {
     if (!basePrice || basePrice === 0) return;
-    
+
     const value = parseFloat(sensitivityValue) || 10;
     const count = parseInt(numberOfScenarios) || 5;
     const newScenarios: ScenarioData[] = [];
-    
+
     // Generate scenarios from negative to positive
     const halfCount = Math.floor(count / 2);
     for (let i = -halfCount; i <= halfCount; i++) {
       if (i === 0 && count % 2 === 0) continue; // Skip zero for even numbers
-      
+
       let adjustedPrice: number;
       if (sensitivityType === 'percentage') {
         const adjustment = (value * i) / 100;
@@ -50,27 +59,27 @@ export default function SensitivityTable({ scenarios, basePrice = 0, onGenerateS
       } else {
         adjustedPrice = basePrice + (value * i);
       }
-      
+
       if (adjustedPrice > 0) {
         const label = i === 0 ? 'Base Case' : 
                     i < 0 ? `${Math.abs(i * (sensitivityType === 'percentage' ? value : value))}${sensitivityType === 'percentage' ? '%' : '$'} Lower` :
                     `${i * (sensitivityType === 'percentage' ? value : value)}${sensitivityType === 'percentage' ? '%' : '$'} Higher`;
-        
+
         // Calculate costs and metrics for this price
         const baseSalesPrice = scenarios.find(s => s.label === 'Base Case')?.salesPrice || basePrice;
         const baseTotalCosts = scenarios.find(s => s.label === 'Base Case')?.totalCosts || 0;
         const baseSalesCosts = scenarios.find(s => s.label === 'Base Case')?.salesCosts || 0;
-        
+
         // Proportionally adjust sales costs if they change with price
         const salesCostRatio = baseSalesPrice > 0 ? baseSalesCosts / baseSalesPrice : 0;
         const adjustedSalesCosts = adjustedPrice * salesCostRatio;
         const adjustedTotalCosts = baseTotalCosts - baseSalesCosts + adjustedSalesCosts;
-        
+
         const netProfit = adjustedPrice - adjustedTotalCosts;
         const margin = adjustedPrice > 0 ? (netProfit / adjustedPrice) * 100 : 0;
         const roi = adjustedTotalCosts > 0 ? (netProfit / adjustedTotalCosts) * 100 : 0;
         const profitPerSqFt = netProfit / (scenarios[0]?.profitPerSqFt ? (scenarios[0].netProfit / scenarios[0].profitPerSqFt) || 1 : 1);
-        
+
         newScenarios.push({
           label,
           salesPrice: adjustedPrice,
@@ -83,7 +92,7 @@ export default function SensitivityTable({ scenarios, basePrice = 0, onGenerateS
         });
       }
     }
-    
+
     if (onGenerateSensitivity) {
       onGenerateSensitivity(newScenarios);
     }
@@ -113,7 +122,7 @@ export default function SensitivityTable({ scenarios, basePrice = 0, onGenerateS
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Profitability Analysis</h3>
-        
+
         {/* Enhanced Sensitivity Analysis Controls */}
         {basePrice > 0 && onGenerateSensitivity && (
           <Card className="mb-6">

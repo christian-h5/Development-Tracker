@@ -1,61 +1,35 @@
-export function calculateSalesCosts(salesPrice: number): number {
-  const first100k = Math.min(salesPrice, 100000);
-  const balance = Math.max(0, salesPrice - 100000);
-  return (first100k * 0.05) + (balance * 0.03);
-}
+export const calculateSalesCosts = (salesPrice: number): number => {
+  if (salesPrice <= 0) return 0;
 
-export function calculateNetProfitWithCustomCosts(
-  salesPrice: number, 
-  hardCosts: number, 
-  softCosts: number, 
-  landCosts: number, 
-  contingencyCosts: number,
-  salesCosts: number,
-  lawyerFees: number
-): number {
-  const totalCosts = hardCosts + softCosts + landCosts + contingencyCosts + salesCosts + lawyerFees;
+  // 5% on first $100k, 3% on balance
+  const firstTier = Math.min(salesPrice, 100000);
+  const secondTier = Math.max(salesPrice - 100000, 0);
+
+  return (firstTier * 0.05) + (secondTier * 0.03);
+};
+
+export const calculateNetProfit = (
+  salesPrice: number,
+  hardCosts: number,
+  softCosts: number,
+  landCosts: number,
+  salesCosts: number
+): number => {
+  const totalCosts = hardCosts + softCosts + landCosts + salesCosts;
   return salesPrice - totalCosts;
-}
+};
 
-export function convertCostPerMethod(cost: number, method: 'perUnit' | 'perSqFt' | 'percentage', squareFootage: number, totalCosts?: number): number {
-  if (method === 'perSqFt') {
-    return cost * squareFootage;
-  } else if (method === 'percentage' && totalCosts) {
-    return (cost / 100) * totalCosts;
-  }
-  return cost;
-}
-
-export function calculateNetProfit(salesPrice: number, hardCosts: number, softCosts: number, landCosts: number, contingencyCosts: number): number {
-  const salesCosts = calculateSalesCosts(salesPrice);
-  const totalCosts = hardCosts + softCosts + landCosts + contingencyCosts + salesCosts;
-  return salesPrice - totalCosts;
-}
-
-export function calculateMargin(salesPrice: number, netProfit: number): number {
-  if (salesPrice === 0) return 0;
+export const calculateMargin = (netProfit: number, salesPrice: number): number => {
+  if (salesPrice <= 0) return 0;
   return (netProfit / salesPrice) * 100;
-}
+};
 
-export function calculateProfitPerSqFt(netProfit: number, squareFootage: number): number {
-  if (squareFootage === 0) return 0;
+export const calculateROI = (netProfit: number, totalCosts: number): number => {
+  if (totalCosts <= 0) return 0;
+  return (netProfit / totalCosts) * 100;
+};
+
+export const calculateProfitPerSqFt = (netProfit: number, squareFootage: number): number => {
+  if (squareFootage <= 0) return 0;
   return netProfit / squareFootage;
-}
-
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-export function formatPercent(value: number): string {
-  return `${value.toFixed(1)}%`;
-}
-
-export function calculateROI(netProfit: number, totalInvestment: number): number {
-  if (totalInvestment === 0) return 0;
-  return (netProfit / totalInvestment) * 100;
-}
+};
