@@ -110,8 +110,7 @@ export type CalculatorScenario = typeof calculatorScenarios.$inferSelect;
 export type InsertFuturePhaseDefaults = z.infer<typeof insertFuturePhaseDefaultsSchema>;
 export type FuturePhaseDefaults = typeof futurePhaseDefaults.$inferSelect;
 
-export type IndividualUnit = typeof individualUnits.$inferSelect;
-export type InsertIndividualUnit = typeof individualUnits.$inferInsert;
+
 
 // Extended types for UI
 export type PhaseWithUnits = Phase & {

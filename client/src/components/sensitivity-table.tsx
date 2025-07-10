@@ -26,14 +26,7 @@ interface SensitivityTableProps {
   onGenerateSensitivity?: (scenarios: ScenarioData[]) => void;
 }
 
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-};
+
 
 export default function SensitivityTable({ scenarios, basePrice = 0, onGenerateSensitivity }: SensitivityTableProps) {
   const [sensitivityType, setSensitivityType] = useState<'percentage' | 'dollar'>('percentage');

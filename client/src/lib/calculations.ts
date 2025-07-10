@@ -33,3 +33,41 @@ export const calculateProfitPerSqFt = (netProfit: number, squareFootage: number)
   if (squareFootage <= 0) return 0;
   return netProfit / squareFootage;
 };
+
+export const calculateNetProfitWithCustomCosts = (
+  salesPrice: number,
+  totalCosts: number
+): number => {
+  return salesPrice - totalCosts;
+};
+
+export const convertCostPerMethod = (
+  value: number, 
+  method: 'perUnit' | 'perSqFt' | 'percentage', 
+  sqFt: number, 
+  baseValue?: number
+): number => {
+  if (method === 'perSqFt') {
+    return value * sqFt;
+  } else if (method === 'percentage' && baseValue) {
+    return (value / 100) * baseValue;
+  }
+  return value;
+};
+
+export const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
+export const formatPercent = (value: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'percent',
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(value / 100);
+};

@@ -120,7 +120,7 @@ export default function ProjectDashboard({ projectId, onAddPhase }: ProjectDashb
                 <div className="text-2xl font-bold text-green-600">{formatPercent(summary.overallROI || 0)}</div>
                 <div className="text-sm text-gray-600">Overall ROI</div>
               </div>
-            </div></div>
+            </div>
           </div>
         </CardContent>
       </Card>

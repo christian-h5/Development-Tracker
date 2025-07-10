@@ -91,7 +91,9 @@ export class MemStorage implements IStorage {
       squareFootage: 1200, 
       bedrooms: 2, 
       lockOffFlexRooms: 1, 
-      totalUnitsInDevelopment: 120 
+      totalUnitsInDevelopment: 120,
+      startDate: null,
+      occupancyDate: null
     };
     const unitTypeB: UnitType = { 
       id: 2, 
@@ -99,7 +101,9 @@ export class MemStorage implements IStorage {
       squareFootage: 1450, 
       bedrooms: 3, 
       lockOffFlexRooms: 1, 
-      totalUnitsInDevelopment: 80 
+      totalUnitsInDevelopment: 80,
+      startDate: null,
+      occupancyDate: null
     };
     const unitTypeC: UnitType = { 
       id: 3, 
@@ -107,7 +111,9 @@ export class MemStorage implements IStorage {
       squareFootage: 1650, 
       bedrooms: 3, 
       lockOffFlexRooms: 2, 
-      totalUnitsInDevelopment: 60 
+      totalUnitsInDevelopment: 60,
+      startDate: null,
+      occupancyDate: null
     };
 
     this.unitTypes.set(1, unitTypeA);
@@ -206,7 +212,9 @@ export class MemStorage implements IStorage {
       id: this.currentUnitTypeId++,
       bedrooms: insertUnitType.bedrooms || 0,
       lockOffFlexRooms: insertUnitType.lockOffFlexRooms || 0,
-      totalUnitsInDevelopment: insertUnitType.totalUnitsInDevelopment || 0
+      totalUnitsInDevelopment: insertUnitType.totalUnitsInDevelopment || 0,
+      startDate: insertUnitType.startDate || null,
+      occupancyDate: insertUnitType.occupancyDate || null
     };
     this.unitTypes.set(unitType.id, unitType);
     return unitType;
@@ -313,7 +321,20 @@ export class MemStorage implements IStorage {
     } else {
       const defaults: FuturePhaseDefaults = { 
         ...insertDefaults, 
-        id: this.currentFuturePhaseDefaultsId++
+        id: this.currentFuturePhaseDefaultsId++,
+        hardCosts: insertDefaults.hardCosts || null,
+        softCosts: insertDefaults.softCosts || null,
+        landCosts: insertDefaults.landCosts || null,
+        contingencyCosts: insertDefaults.contingencyCosts || null,
+        salesCosts: insertDefaults.salesCosts || null,
+        lawyerFees: insertDefaults.lawyerFees || null,
+        hardCostsInputMethod: insertDefaults.hardCostsInputMethod || 'perUnit',
+        softCostsInputMethod: insertDefaults.softCostsInputMethod || 'perUnit',
+        landCostsInputMethod: insertDefaults.landCostsInputMethod || 'perUnit',
+        contingencyCostsInputMethod: insertDefaults.contingencyCostsInputMethod || 'perUnit',
+        salesCostsInputMethod: insertDefaults.salesCostsInputMethod || 'perUnit',
+        lawyerFeesInputMethod: insertDefaults.lawyerFeesInputMethod || 'perUnit',
+        isActive: insertDefaults.isActive || false
       };
       this.futurePhaseDefaults.set(defaults.id, defaults);
       return defaults;
