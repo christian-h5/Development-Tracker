@@ -46,7 +46,7 @@ interface UnitConfig {
 export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }: PhaseModalProps) {
   const { toast } = useToast();
   const [phaseName, setPhaseName] = useState(phase?.name || "");
-  const [phaseStatus, setPhaseStatus] = useState(phase?.status || "planned");
+  const [phaseStatus, setPhaseStatus] = useState(phase?.status || "future");
   const [totalSquareFootage, setTotalSquareFootage] = useState(phase?.totalSquareFootage?.toString() || "");
   const [unitConfigs, setUnitConfigs] = useState<UnitConfig[]>([]);
 
@@ -285,7 +285,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                   <SelectContent>
                     <SelectItem value="completed">Completed</SelectItem>
                     <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="planned">Planned</SelectItem>
+                    <SelectItem value="future">Future</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

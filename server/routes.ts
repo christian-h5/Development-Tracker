@@ -6,11 +6,21 @@ import {
   insertPhaseSchema, 
   insertUnitTypeSchema, 
   insertPhaseUnitSchema,
-  insertCalculatorScenarioSchema 
+  insertCalculatorScenarioSchema,
+  insertFuturePhaseDefaultsSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Project routes
+  app.get("/api/projects", async (req, res) => {
+    try {
+      const projects = await storage.getProjects();
+      res.json(projects);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get projects" });
+    }
+  });
+
   app.get("/api/projects/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -181,6 +191,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(scenario);
     } catch (error) {
       res.status(400).json({ message: "Invalid calculator data" });
+    }
+  });
+
+  // Future Phase Defaults routes
+  app.get("/api/future-phase-defaults/:projectId/:unitTypeId", async (req, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const unitTypeId = parseInt(req.params.unitTypeId);
+      const defaults = await storage.getFuturePhaseDefaults(projectId, unitTypeId);
+      res.json(defaults);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get future phase defaults" });
+    }
+  });
+
+  app.post("/api/future-phase-defaults", async (req, res) => {
+    try {
+      const data = insertFuturePhaseDefaultsSchema.parse(req.body);
+      const defaults = await storage.saveFuturePhaseDefaults(data);
+      res.json(defaults);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid future phase defaults data" });
     }
   });
 

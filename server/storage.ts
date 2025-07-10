@@ -2,37 +2,42 @@ import {
   projects, phases, unitTypes, phaseUnits, calculatorScenarios,
   type Project, type Phase, type UnitType, type PhaseUnit, type CalculatorScenario,
   type InsertProject, type InsertPhase, type InsertUnitType, type InsertPhaseUnit, type InsertCalculatorScenario,
-  type PhaseWithUnits, type ProjectSummary
+  type PhaseWithUnits, type ProjectSummary, type FuturePhaseDefaults, type InsertFuturePhaseDefaults
 } from "@shared/schema";
 
 export interface IStorage {
   // Projects
+  getProjects(): Promise<Project[]>;
   getProject(id: number): Promise<Project | undefined>;
   createProject(project: InsertProject): Promise<Project>;
   updateProject(id: number, project: Partial<InsertProject>): Promise<Project>;
-  
+
   // Phases
   getPhases(projectId: number): Promise<PhaseWithUnits[]>;
   getPhase(id: number): Promise<PhaseWithUnits | undefined>;
   createPhase(phase: InsertPhase): Promise<Phase>;
   updatePhase(id: number, phase: Partial<InsertPhase>): Promise<Phase>;
   deletePhase(id: number): Promise<void>;
-  
+
   // Unit Types
   getUnitTypes(): Promise<UnitType[]>;
   createUnitType(unitType: InsertUnitType): Promise<UnitType>;
   updateUnitType(id: number, unitType: Partial<InsertUnitType>): Promise<UnitType>;
-  
+
   // Phase Units
   createPhaseUnit(phaseUnit: InsertPhaseUnit): Promise<PhaseUnit>;
   updatePhaseUnit(id: number, phaseUnit: Partial<InsertPhaseUnit>): Promise<PhaseUnit>;
   deletePhaseUnit(id: number): Promise<void>;
   getPhaseUnits(phaseId: number): Promise<(PhaseUnit & { unitType: UnitType })[]>;
-  
+
   // Calculator Scenarios
   getCalculatorScenario(unitTypeId: number): Promise<CalculatorScenario | undefined>;
   saveCalculatorScenario(scenario: InsertCalculatorScenario): Promise<CalculatorScenario>;
-  
+
+   // Future Phase Defaults
+  getFuturePhaseDefaults(projectId: number, unitTypeId: number): Promise<FuturePhaseDefaults | undefined>;
+  saveFuturePhaseDefaults(data: InsertFuturePhaseDefaults): Promise<FuturePhaseDefaults>;
+
   // Summary
   getProjectSummary(projectId: number): Promise<ProjectSummary>;
 }
@@ -43,11 +48,13 @@ export class MemStorage implements IStorage {
   private unitTypes: Map<number, UnitType>;
   private phaseUnits: Map<number, PhaseUnit>;
   private calculatorScenarios: Map<number, CalculatorScenario>;
+  private futurePhaseDefaults: Map<number, FuturePhaseDefaults>;
   private currentProjectId: number;
   private currentPhaseId: number;
   private currentUnitTypeId: number;
   private currentPhaseUnitId: number;
   private currentScenarioId: number;
+  private currentFuturePhaseDefaultsId: number;
 
   constructor() {
     this.projects = new Map();
@@ -55,12 +62,14 @@ export class MemStorage implements IStorage {
     this.unitTypes = new Map();
     this.phaseUnits = new Map();
     this.calculatorScenarios = new Map();
+    this.futurePhaseDefaults = new Map();
     this.currentProjectId = 1;
     this.currentPhaseId = 1;
     this.currentUnitTypeId = 1;
     this.currentPhaseUnitId = 1;
     this.currentScenarioId = 1;
-    
+    this.currentFuturePhaseDefaultsId = 1;
+
     this.initializeDefaultData();
   }
 
@@ -100,11 +109,15 @@ export class MemStorage implements IStorage {
       lockOffFlexRooms: 2, 
       totalUnitsInDevelopment: 60 
     };
-    
+
     this.unitTypes.set(1, unitTypeA);
     this.unitTypes.set(2, unitTypeB);
     this.unitTypes.set(3, unitTypeC);
     this.currentUnitTypeId = 4;
+  }
+
+  async getProjects(): Promise<Project[]> {
+    return Array.from(this.projects.values());
   }
 
   async getProject(id: number): Promise<Project | undefined> {
@@ -125,7 +138,7 @@ export class MemStorage implements IStorage {
   async updateProject(id: number, updateData: Partial<InsertProject>): Promise<Project> {
     const existing = this.projects.get(id);
     if (!existing) throw new Error("Project not found");
-    
+
     const updated = { ...existing, ...updateData };
     this.projects.set(id, updated);
     return updated;
@@ -133,21 +146,21 @@ export class MemStorage implements IStorage {
 
   async getPhases(projectId: number): Promise<PhaseWithUnits[]> {
     const projectPhases = Array.from(this.phases.values()).filter(p => p.projectId === projectId);
-    
+
     const phasesWithUnits = await Promise.all(
       projectPhases.map(async (phase) => ({
         ...phase,
         units: await this.getPhaseUnits(phase.id)
       }))
     );
-    
+
     return phasesWithUnits;
   }
 
   async getPhase(id: number): Promise<PhaseWithUnits | undefined> {
     const phase = this.phases.get(id);
     if (!phase) return undefined;
-    
+
     return {
       ...phase,
       units: await this.getPhaseUnits(id)
@@ -167,7 +180,7 @@ export class MemStorage implements IStorage {
   async updatePhase(id: number, updateData: Partial<InsertPhase>): Promise<Phase> {
     const existing = this.phases.get(id);
     if (!existing) throw new Error("Phase not found");
-    
+
     const updated = { ...existing, ...updateData };
     this.phases.set(id, updated);
     return updated;
@@ -179,7 +192,7 @@ export class MemStorage implements IStorage {
     const unitsToDelete = Array.from(this.phaseUnits.entries())
       .filter(([_, unit]) => unit.phaseId === id)
       .map(([unitId, _]) => unitId);
-    
+
     unitsToDelete.forEach(unitId => this.phaseUnits.delete(unitId));
   }
 
@@ -202,7 +215,7 @@ export class MemStorage implements IStorage {
   async updateUnitType(id: number, updateData: Partial<InsertUnitType>): Promise<UnitType> {
     const existing = this.unitTypes.get(id);
     if (!existing) throw new Error("Unit type not found");
-    
+
     const updated = { ...existing, ...updateData };
     this.unitTypes.set(id, updated);
     return updated;
@@ -233,7 +246,7 @@ export class MemStorage implements IStorage {
   async updatePhaseUnit(id: number, updateData: Partial<InsertPhaseUnit>): Promise<PhaseUnit> {
     const existing = this.phaseUnits.get(id);
     if (!existing) throw new Error("Phase unit not found");
-    
+
     const updated = { ...existing, ...updateData };
     this.phaseUnits.set(id, updated);
     return updated;
@@ -245,7 +258,7 @@ export class MemStorage implements IStorage {
 
   async getPhaseUnits(phaseId: number): Promise<(PhaseUnit & { unitType: UnitType })[]> {
     const units = Array.from(this.phaseUnits.values()).filter(u => u.phaseId === phaseId);
-    
+
     return units.map(unit => {
       const unitType = this.unitTypes.get(unit.unitTypeId);
       if (!unitType) throw new Error("Unit type not found");
@@ -260,7 +273,7 @@ export class MemStorage implements IStorage {
   async saveCalculatorScenario(insertScenario: InsertCalculatorScenario): Promise<CalculatorScenario> {
     // Check if scenario already exists for this unit type
     const existing = Array.from(this.calculatorScenarios.values()).find(s => s.unitTypeId === insertScenario.unitTypeId);
-    
+
     if (existing) {
       const updated = { ...existing, ...insertScenario };
       this.calculatorScenarios.set(existing.id, updated);
@@ -285,46 +298,70 @@ export class MemStorage implements IStorage {
     }
   }
 
+  async getFuturePhaseDefaults(projectId: number, unitTypeId: number): Promise<FuturePhaseDefaults | undefined> {
+    return Array.from(this.futurePhaseDefaults.values()).find(d => d.projectId === projectId && d.unitTypeId === unitTypeId);
+  }
+
+  async saveFuturePhaseDefaults(insertDefaults: InsertFuturePhaseDefaults): Promise<FuturePhaseDefaults> {
+    // Check if defaults already exists for this project and unit type
+    const existing = Array.from(this.futurePhaseDefaults.values()).find(d => d.projectId === insertDefaults.projectId && d.unitTypeId === insertDefaults.unitTypeId);
+
+    if (existing) {
+      const updated = { ...existing, ...insertDefaults };
+      this.futurePhaseDefaults.set(existing.id, updated);
+      return updated;
+    } else {
+      const defaults: FuturePhaseDefaults = { 
+        ...insertDefaults, 
+        id: this.currentFuturePhaseDefaultsId++
+      };
+      this.futurePhaseDefaults.set(defaults.id, defaults);
+      return defaults;
+    }
+  }
+
   async getProjectSummary(projectId: number): Promise<ProjectSummary> {
     const projectPhases = Array.from(this.phases.values()).filter(p => p.projectId === projectId);
     const completedPhases = projectPhases.filter(p => p.status === 'completed').length;
-    
+
     let totalUnits = 0;
     let totalCosts = 0;
     let totalRevenue = 0;
-    
+
     for (const phase of projectPhases) {
       const units = await this.getPhaseUnits(phase.id);
-      
+
       for (const unit of units) {
         totalUnits += unit.quantity;
-        
+
         if (unit.hardCosts && unit.softCosts && unit.landCosts && unit.contingencyCosts && unit.salesPrice) {
           const hardCosts = parseFloat(unit.hardCosts);
           const softCosts = parseFloat(unit.softCosts);
           const landCosts = parseFloat(unit.landCosts);
           const contingencyCosts = parseFloat(unit.contingencyCosts);
           const salesPrice = parseFloat(unit.salesPrice);
-          
+
           // Calculate sales costs
           const salesCosts = this.calculateSalesCosts(salesPrice);
-          
+
           const unitTotalCosts = (hardCosts + softCosts + landCosts + contingencyCosts + salesCosts) * unit.quantity;
           const unitRevenue = salesPrice * unit.quantity;
-          
+
           totalCosts += unitTotalCosts;
           totalRevenue += unitRevenue;
         }
       }
     }
-    
+
     const overallMargin = totalRevenue > 0 ? ((totalRevenue - totalCosts) / totalRevenue) * 100 : 0;
-    
+    const overallROI = totalRevenue > 0 ? ((totalRevenue - totalCosts) / totalCosts) * 100 : 0;
+
     return {
       totalPhases: projectPhases.length,
       completedPhases,
       totalUnits,
       overallMargin: Math.round(overallMargin * 10) / 10,
+      overallROI: Math.round(overallROI * 10) / 10,
       totalCosts,
       totalRevenue
     };

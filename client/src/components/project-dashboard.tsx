@@ -103,7 +103,7 @@ export default function ProjectDashboard({ projectId, onAddPhase }: ProjectDashb
           {/* Project Summary */}
           <div className="bg-gray-50 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Financial Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900">{formatCurrency(summary.totalRevenue)}</div>
                 <div className="text-sm text-gray-600">Total Revenue</div>
@@ -116,7 +116,11 @@ export default function ProjectDashboard({ projectId, onAddPhase }: ProjectDashb
                 <div className="text-2xl font-bold text-success">{formatCurrency(summary.totalRevenue - summary.totalCosts)}</div>
                 <div className="text-sm text-gray-600">Total Profit</div>
               </div>
-            </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{formatPercent(summary.overallROI || 0)}</div>
+                <div className="text-sm text-gray-600">Overall ROI</div>
+              </div>
+            </div></div>
           </div>
         </CardContent>
       </Card>

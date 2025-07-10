@@ -5,11 +5,15 @@ import PhaseTable from "@/components/phase-table";
 import PhaseModal from "@/components/phase-modal";
 import UnitTypeManager from "@/components/unit-type-manager";
 import type { PhaseWithUnits } from "@shared/schema";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import FuturePhaseDefaultsComponent from "@/components/future-phase-defaults";
 
 export default function ProjectTracking() {
   const [selectedPhase, setSelectedPhase] = useState<PhaseWithUnits | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNewPhase, setIsNewPhase] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(1);
+
 
   const projectId = 1; // Default project ID
 
@@ -42,27 +46,45 @@ export default function ProjectTracking() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <ProjectDashboard projectId={projectId} onAddPhase={handleAddPhase} />
-      
-      <div className="mb-8">
-        <UnitTypeManager />
+      <div className="mb-4">
+        <button 
+          onClick={() => setSelectedProjectId(null)}
+          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+        >
+          ← Back to Projects
+        </button>
       </div>
-      
-      <PhaseTable 
-        phases={phases} 
-        onEditPhase={handleEditPhase}
-        onViewPhase={handleEditPhase}
+
+      <ProjectDashboard projectId={projectId} onAddPhase={handleAddPhase} />
+
+      <Tabs defaultValue="phases" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="phases">Phase Management</TabsTrigger>
+          <TabsTrigger value="unit-types">Unit Types</TabsTrigger>
+          <TabsTrigger value="future-defaults">Future Phase Defaults</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="phases">
+          <PhaseTable phases={phases} onEditPhase={handleEditPhase} />
+        </TabsContent>
+
+        <TabsContent value="unit-types">
+          <UnitTypeManager />
+        </TabsContent>
+
+        <TabsContent value="future-defaults">
+          <FuturePhaseDefaultsComponent projectId={projectId} />
+        </TabsContent>
+      </Tabs>
+
+      <PhaseModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        phase={selectedPhase}
+        projectId={projectId}
+        isNew={isNewPhase}
+        onSave={handlePhaseSaved}
       />
-      
-      {isModalOpen && (
-        <PhaseModal
-          phase={selectedPhase}
-          isNew={isNewPhase}
-          projectId={projectId}
-          onClose={handleCloseModal}
-          onSave={handlePhaseSaved}
-        />
-      )}
     </main>
   );
 }

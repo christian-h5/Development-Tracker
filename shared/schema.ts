@@ -13,8 +13,27 @@ export const phases = pgTable("phases", {
   id: serial("id").primaryKey(),
   projectId: integer("project_id").notNull(),
   name: text("name").notNull(),
-  status: text("status").notNull(), // 'completed', 'in_progress', 'planned'
+  status: text("status").notNull(), // 'completed', 'in_progress', 'future'
   totalSquareFootage: integer("total_square_footage"),
+});
+
+export const futurePhaseDefaults = pgTable("future_phase_defaults", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").notNull(),
+  unitTypeId: integer("unit_type_id").notNull(),
+  hardCosts: decimal("hard_costs", { precision: 12, scale: 2 }),
+  softCosts: decimal("soft_costs", { precision: 12, scale: 2 }),
+  landCosts: decimal("land_costs", { precision: 12, scale: 2 }),
+  contingencyCosts: decimal("contingency_costs", { precision: 12, scale: 2 }),
+  salesCosts: decimal("sales_costs", { precision: 12, scale: 2 }),
+  lawyerFees: decimal("lawyer_fees", { precision: 12, scale: 2 }),
+  hardCostsInputMethod: text("hard_costs_input_method").notNull().default("perUnit"),
+  softCostsInputMethod: text("soft_costs_input_method").notNull().default("perUnit"),
+  landCostsInputMethod: text("land_costs_input_method").notNull().default("perUnit"),
+  contingencyCostsInputMethod: text("contingency_costs_input_method").notNull().default("perUnit"),
+  salesCostsInputMethod: text("sales_costs_input_method").notNull().default("perUnit"),
+  lawyerFeesInputMethod: text("lawyer_fees_input_method").notNull().default("perUnit"),
+  isActive: boolean("is_active").notNull().default(false),
 });
 
 export const unitTypes = pgTable("unit_types", {
@@ -75,6 +94,7 @@ export const insertPhaseSchema = createInsertSchema(phases).omit({ id: true });
 export const insertUnitTypeSchema = createInsertSchema(unitTypes).omit({ id: true });
 export const insertPhaseUnitSchema = createInsertSchema(phaseUnits).omit({ id: true });
 export const insertCalculatorScenarioSchema = createInsertSchema(calculatorScenarios).omit({ id: true });
+export const insertFuturePhaseDefaultsSchema = createInsertSchema(futurePhaseDefaults).omit({ id: true });
 
 // Types
 export type InsertProject = z.infer<typeof insertProjectSchema>;
@@ -87,6 +107,8 @@ export type InsertPhaseUnit = z.infer<typeof insertPhaseUnitSchema>;
 export type PhaseUnit = typeof phaseUnits.$inferSelect;
 export type InsertCalculatorScenario = z.infer<typeof insertCalculatorScenarioSchema>;
 export type CalculatorScenario = typeof calculatorScenarios.$inferSelect;
+export type InsertFuturePhaseDefaults = z.infer<typeof insertFuturePhaseDefaultsSchema>;
+export type FuturePhaseDefaults = typeof futurePhaseDefaults.$inferSelect;
 
 export type IndividualUnit = typeof individualUnits.$inferSelect;
 export type InsertIndividualUnit = typeof individualUnits.$inferInsert;
@@ -101,6 +123,7 @@ export type ProjectSummary = {
   completedPhases: number;
   totalUnits: number;
   overallMargin: number;
+  overallROI: number;
   totalCosts: number;
   totalRevenue: number;
 };
