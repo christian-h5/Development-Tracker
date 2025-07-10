@@ -347,6 +347,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                         inputMethod={config.hardCostsInputMethod}
                         onToggleMethod={(method) => updateUnitConfig(index, 'hardCostsInputMethod', method)}
                         placeholder="Enter amount"
+                        squareFootage={unitType?.squareFootage || 1}
                       />
                       
                       <CostInputToggle
@@ -356,6 +357,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                         inputMethod={config.softCostsInputMethod}
                         onToggleMethod={(method) => updateUnitConfig(index, 'softCostsInputMethod', method)}
                         placeholder="Enter amount"
+                        squareFootage={unitType?.squareFootage || 1}
                       />
                       
                       <CostInputToggle
@@ -365,6 +367,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                         inputMethod={config.landCostsInputMethod}
                         onToggleMethod={(method) => updateUnitConfig(index, 'landCostsInputMethod', method)}
                         placeholder="Enter amount"
+                        squareFootage={unitType?.squareFootage || 1}
                       />
                       
                       <CostInputToggle
@@ -374,6 +377,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                         inputMethod={config.contingencyCostsInputMethod}
                         onToggleMethod={(method) => updateUnitConfig(index, 'contingencyCostsInputMethod', method)}
                         placeholder="Enter amount"
+                        squareFootage={unitType?.squareFootage || 1}
                       />
                       
                       <CostInputToggle
@@ -383,6 +387,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                         inputMethod={config.salesCostsInputMethod}
                         onToggleMethod={(method) => updateUnitConfig(index, 'salesCostsInputMethod', method)}
                         placeholder="Enter amount"
+                        squareFootage={unitType?.squareFootage || 1}
                       />
                       
                       <CostInputToggle
@@ -392,6 +397,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                         inputMethod={config.lawyerFeesInputMethod}
                         onToggleMethod={(method) => updateUnitConfig(index, 'lawyerFeesInputMethod', method)}
                         placeholder="Enter amount"
+                        squareFootage={unitType?.squareFootage || 1}
                       />
                       
                       <div>

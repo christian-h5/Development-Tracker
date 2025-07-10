@@ -12,6 +12,7 @@ interface CostInputToggleProps {
   onToggleMethod: (method: 'perUnit' | 'perSqFt') => void;
   disabled?: boolean;
   placeholder?: string;
+  squareFootage?: number;
 }
 
 export default function CostInputToggle({
@@ -21,8 +22,26 @@ export default function CostInputToggle({
   inputMethod,
   onToggleMethod,
   disabled = false,
-  placeholder = "Enter amount"
+  placeholder = "Enter amount",
+  squareFootage = 1
 }: CostInputToggleProps) {
+  const numericValue = parseFloat(value) || 0;
+  
+  // Calculate the converted value
+  const getConvertedValue = () => {
+    if (!numericValue || !squareFootage) return null;
+    
+    if (inputMethod === 'perSqFt') {
+      // Show per unit equivalent
+      return numericValue * squareFootage;
+    } else {
+      // Show per sq ft equivalent
+      return numericValue / squareFootage;
+    }
+  };
+
+  const convertedValue = getConvertedValue();
+  
   return (
     <div className="space-y-2">
       <Label className="text-sm font-medium">{label}</Label>
@@ -66,6 +85,15 @@ export default function CostInputToggle({
           {inputMethod === 'perUnit' ? '/ unit' : '/ sq ft'}
         </span>
       </div>
+      
+      {convertedValue !== null && numericValue > 0 && (
+        <div className="text-xs text-gray-500 ml-2">
+          = ${convertedValue.toLocaleString('en-US', { 
+            minimumFractionDigits: 0, 
+            maximumFractionDigits: 2 
+          })} {inputMethod === 'perSqFt' ? 'per unit' : 'per sq ft'}
+        </div>
+      )}
     </div>
   );
 }

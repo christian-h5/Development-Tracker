@@ -229,6 +229,7 @@ export default function UnitCalculatorForm() {
                 onChange={setHardCosts}
                 inputMethod={hardCostsInputMethod}
                 onToggleMethod={setHardCostsInputMethod}
+                squareFootage={parseFloat(squareFootage) || 1}
               />
               
               <CostInputToggle
@@ -237,6 +238,7 @@ export default function UnitCalculatorForm() {
                 onChange={setSoftCosts}
                 inputMethod={softCostsInputMethod}
                 onToggleMethod={setSoftCostsInputMethod}
+                squareFootage={parseFloat(squareFootage) || 1}
               />
               
               <CostInputToggle
@@ -245,6 +247,7 @@ export default function UnitCalculatorForm() {
                 onChange={setLandCosts}
                 inputMethod={landCostsInputMethod}
                 onToggleMethod={setLandCostsInputMethod}
+                squareFootage={parseFloat(squareFootage) || 1}
               />
               
               <CostInputToggle
@@ -253,6 +256,7 @@ export default function UnitCalculatorForm() {
                 onChange={setContingencyCosts}
                 inputMethod={contingencyCostsInputMethod}
                 onToggleMethod={setContingencyCostsInputMethod}
+                squareFootage={parseFloat(squareFootage) || 1}
               />
               
               <CostInputToggle
@@ -261,6 +265,7 @@ export default function UnitCalculatorForm() {
                 onChange={setSalesCosts}
                 inputMethod={salesCostsInputMethod}
                 onToggleMethod={setSalesCostsInputMethod}
+                squareFootage={parseFloat(squareFootage) || 1}
               />
               
               <CostInputToggle
@@ -269,6 +274,7 @@ export default function UnitCalculatorForm() {
                 onChange={setLawyerFees}
                 inputMethod={lawyerFeesInputMethod}
                 onToggleMethod={setLawyerFeesInputMethod}
+                squareFootage={parseFloat(squareFootage) || 1}
               />
             </div>
 
