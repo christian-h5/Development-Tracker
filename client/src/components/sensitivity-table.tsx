@@ -95,9 +95,9 @@ export default function SensitivityTable({ scenarios, basePrice = 0, onGenerateS
       case 'Conservative':
         return 'bg-gray-100 text-gray-800';
       case 'Base Case':
-        return 'bg-primary text-white';
+        return 'bg-blue-500 text-white';
       case 'Optimistic':
-        return 'bg-success text-white';
+        return 'bg-green-500 text-white';
       case 'Premium':
         return 'bg-purple-500 text-white';
       default:
@@ -130,12 +130,12 @@ export default function SensitivityTable({ scenarios, basePrice = 0, onGenerateS
                 <div>
                   <Label htmlFor="sensitivityType">Adjustment Type</Label>
                   <Select value={sensitivityType} onValueChange={(value: 'percentage' | 'dollar') => setSensitivityType(value)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="percentage">Percentage (%)</SelectItem>
-                      <SelectItem value="dollar">Dollar Amount ($)</SelectItem>
+                    <SelectContent className="bg-white border-gray-300">
+                      <SelectItem value="percentage" className="text-gray-900 hover:bg-gray-100">Percentage (%)</SelectItem>
+                      <SelectItem value="dollar" className="text-gray-900 hover:bg-gray-100">Dollar Amount ($)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -154,14 +154,14 @@ export default function SensitivityTable({ scenarios, basePrice = 0, onGenerateS
                 <div>
                   <Label htmlFor="numberOfScenarios">Number of Scenarios</Label>
                   <Select value={numberOfScenarios} onValueChange={setNumberOfScenarios}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="3">3</SelectItem>
-                      <SelectItem value="5">5</SelectItem>
-                      <SelectItem value="7">7</SelectItem>
-                      <SelectItem value="9">9</SelectItem>
+                    <SelectContent className="bg-white border-gray-300">
+                      <SelectItem value="3" className="text-gray-900 hover:bg-gray-100">3</SelectItem>
+                      <SelectItem value="5" className="text-gray-900 hover:bg-gray-100">5</SelectItem>
+                      <SelectItem value="7" className="text-gray-900 hover:bg-gray-100">7</SelectItem>
+                      <SelectItem value="9" className="text-gray-900 hover:bg-gray-100">9</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

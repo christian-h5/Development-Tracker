@@ -281,13 +281,13 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
               <div>
                 <Label htmlFor="phaseStatus">Status</Label>
                 <Select value={phaseStatus} onValueChange={setPhaseStatus}>
-                  <SelectTrigger>
-                    <SelectValue />
+                  <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                    <SelectValue placeholder="Select status" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="future">Future</SelectItem>
+                  <SelectContent className="bg-white border-gray-300">
+                    <SelectItem value="completed" className="text-gray-900 hover:bg-gray-100">Completed</SelectItem>
+                    <SelectItem value="in_progress" className="text-gray-900 hover:bg-gray-100">In Progress</SelectItem>
+                    <SelectItem value="future" className="text-gray-900 hover:bg-gray-100">Future</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -326,12 +326,12 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
                               value={config.unitTypeId.toString()}
                               onValueChange={(value) => updateUnitConfig(index, 'unitTypeId', parseInt(value))}
                             >
-                              <SelectTrigger className="w-48">
-                                <SelectValue />
+                              <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900">
+                                <SelectValue placeholder="Select unit type" />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent className="bg-white border-gray-300">
                                 {unitTypes.map(ut => (
-                                  <SelectItem key={ut.id} value={ut.id.toString()}>
+                                  <SelectItem key={ut.id} value={ut.id.toString()} className="text-gray-900 hover:bg-gray-100">
                                     {ut.name} - {ut.squareFootage} sq ft
                                   </SelectItem>
                                 ))}

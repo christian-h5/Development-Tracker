@@ -232,12 +232,12 @@ export default function UnitCalculatorForm() {
               <div>
                 <Label htmlFor="unitType">Unit Type</Label>
                 <Select onValueChange={(value) => setSelectedUnitTypeId(parseInt(value))}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                     <SelectValue placeholder="Select unit type" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white border-gray-300">
                     {unitTypes.map((unitType: UnitType) => (
-                      <SelectItem key={unitType.id} value={unitType.id.toString()}>
+                      <SelectItem key={unitType.id} value={unitType.id.toString()} className="text-gray-900 hover:bg-gray-100">
                         {unitType.name} - {unitType.squareFootage} sq ft
                       </SelectItem>
                     ))}

@@ -16,13 +16,15 @@ export default function PhaseTable({ phases, onEditPhase, onViewPhase }: PhaseTa
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-success text-white';
+        return 'bg-green-500 text-white';
       case 'in_progress':
-        return 'bg-warning text-white';
+        return 'bg-yellow-500 text-white';
+      case 'future':
+        return 'bg-blue-500 text-white';
       case 'planned':
-        return 'bg-gray-400 text-white';
+        return 'bg-gray-500 text-white';
       default:
-        return 'bg-gray-400 text-white';
+        return 'bg-gray-500 text-white';
     }
   };
 
