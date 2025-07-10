@@ -55,6 +55,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/projects/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const data = insertProjectSchema.partial().parse(req.body);
+      const project = await storage.updateProject(id, data);
+      res.json(project);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update project" });
+    }
+  });
+
   // Phase routes
   app.get("/api/projects/:projectId/phases", async (req, res) => {
     try {

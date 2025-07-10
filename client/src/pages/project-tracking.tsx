@@ -3,11 +3,12 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Edit3 } from "lucide-react";
 import ProjectDashboard from "@/components/project-dashboard";
 import PhaseTable from "@/components/phase-table";
 import PhaseModal from "@/components/phase-modal";
 import UnitTypeManager from "@/components/unit-type-manager";
+import ProjectEditModal from "@/components/project-edit-modal";
 import type { PhaseWithUnits, Project } from "@shared/schema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import FuturePhaseDefaultsComponent from "@/components/future-phase-defaults";
@@ -17,6 +18,9 @@ export default function ProjectTracking() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNewPhase, setIsNewPhase] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<number>(1);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [isNewProject, setIsNewProject] = useState(false);
 
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ["/api/projects"]
@@ -51,6 +55,24 @@ export default function ProjectTracking() {
     handleCloseModal();
   };
 
+  const handleEditProject = (project: Project) => {
+    setEditingProject(project);
+    setIsNewProject(false);
+    setIsProjectModalOpen(true);
+  };
+
+  const handleCreateProject = () => {
+    setEditingProject(null);
+    setIsNewProject(true);
+    setIsProjectModalOpen(true);
+  };
+
+  const handleCloseProjectModal = () => {
+    setIsProjectModalOpen(false);
+    setEditingProject(null);
+    setIsNewProject(false);
+  };
+
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Project Selector */}
@@ -58,7 +80,7 @@ export default function ProjectTracking() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Project Selection</span>
-            <Button size="sm" className="gap-2">
+            <Button size="sm" className="gap-2" onClick={handleCreateProject}>
               <Plus className="h-4 w-4" />
               New Project
             </Button>
@@ -93,11 +115,24 @@ export default function ProjectTracking() {
             
             {selectedProject && (
               <div className="p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-medium text-blue-900">{selectedProject.name}</h4>
-                <p className="text-sm text-blue-700 mt-1">{selectedProject.description}</p>
-                <p className="text-sm text-blue-600 mt-2">
-                  Total Phases: {selectedProject.totalPhases}
-                </p>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-blue-900">{selectedProject.name}</h4>
+                    <p className="text-sm text-blue-700 mt-1">{selectedProject.description}</p>
+                    <p className="text-sm text-blue-600 mt-2">
+                      Total Phases: {selectedProject.totalPhases}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-2 text-blue-600 border-blue-200 hover:bg-blue-100"
+                    onClick={() => handleEditProject(selectedProject)}
+                  >
+                    <Edit3 className="h-4 w-4" />
+                    Edit
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -141,6 +176,13 @@ export default function ProjectTracking() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onSave={handlePhaseSaved}
+      />
+
+      <ProjectEditModal
+        project={editingProject}
+        isOpen={isProjectModalOpen}
+        onClose={handleCloseProjectModal}
+        isNew={isNewProject}
       />
     </main>
   );
