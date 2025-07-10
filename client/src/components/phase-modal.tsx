@@ -37,9 +37,10 @@ interface UnitConfig {
   hardCostsInputMethod: 'perUnit' | 'perSqFt';
   softCostsInputMethod: 'perUnit' | 'perSqFt';
   landCostsInputMethod: 'perUnit' | 'perSqFt';
-  contingencyCostsInputMethod: 'perUnit' | 'perSqFt';
+  contingencyCostsInputMethod: 'perUnit' | 'perSqFt' | 'percentage';
   salesCostsInputMethod: 'perUnit' | 'perSqFt';
   lawyerFeesInputMethod: 'perUnit' | 'perSqFt';
+  individualPrices: number[];
 }
 
 export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }: PhaseModalProps) {
@@ -98,9 +99,10 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
         hardCostsInputMethod: (unit.hardCostsInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
         softCostsInputMethod: (unit.softCostsInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
         landCostsInputMethod: (unit.landCostsInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
-        contingencyCostsInputMethod: (unit.contingencyCostsInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
+        contingencyCostsInputMethod: (unit.contingencyCostsInputMethod as 'perUnit' | 'perSqFt' | 'percentage') || 'perUnit',
         salesCostsInputMethod: (unit.salesCostsInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
         lawyerFeesInputMethod: (unit.lawyerFeesInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
+        individualPrices: unit.individualPrices ? JSON.parse(unit.individualPrices) : Array(unit.quantity).fill(parseFloat(unit.salesPrice || "0")),
       }));
       setUnitConfigs(configs);
     }
@@ -121,9 +123,10 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
         hardCostsInputMethod: 'perUnit',
         softCostsInputMethod: 'perUnit',
         landCostsInputMethod: 'perUnit',
-        contingencyCostsInputMethod: 'perUnit',
+        contingencyCostsInputMethod: 'perUnit' as 'perUnit' | 'perSqFt' | 'percentage',
         salesCostsInputMethod: 'perUnit',
         lawyerFeesInputMethod: 'perUnit',
+        individualPrices: [0],
       }]);
     }
   };
@@ -135,6 +138,39 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
   const updateUnitConfig = (index: number, field: keyof UnitConfig, value: any) => {
     const updated = [...unitConfigs];
     updated[index] = { ...updated[index], [field]: value };
+    
+    // Update individual prices array when quantity changes
+    if (field === 'quantity') {
+      const newQuantity = parseInt(value) || 0;
+      const currentPrices = updated[index].individualPrices || [];
+      const basePrice = updated[index].salesPrice || 0;
+      
+      if (newQuantity > currentPrices.length) {
+        // Add new entries with base price
+        const newPrices = [...currentPrices, ...Array(newQuantity - currentPrices.length).fill(basePrice)];
+        updated[index].individualPrices = newPrices;
+      } else if (newQuantity < currentPrices.length) {
+        // Remove excess entries
+        updated[index].individualPrices = currentPrices.slice(0, newQuantity);
+      }
+    }
+    
+    // Update all individual prices when base sales price changes
+    if (field === 'salesPrice') {
+      const newPrice = parseFloat(value) || 0;
+      const currentPrices = updated[index].individualPrices || [];
+      updated[index].individualPrices = currentPrices.map(price => price === 0 ? newPrice : price);
+    }
+    
+    setUnitConfigs(updated);
+  };
+
+  const updateIndividualPrice = (configIndex: number, priceIndex: number, value: number) => {
+    const updated = [...unitConfigs];
+    if (!updated[configIndex].individualPrices) {
+      updated[configIndex].individualPrices = Array(updated[configIndex].quantity).fill(0);
+    }
+    updated[configIndex].individualPrices[priceIndex] = value;
     setUnitConfigs(updated);
   };
 
@@ -204,6 +240,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
           contingencyCostsInputMethod: config.contingencyCostsInputMethod,
           salesCostsInputMethod: config.salesCostsInputMethod,
           lawyerFeesInputMethod: config.lawyerFeesInputMethod,
+          individualPrices: JSON.stringify(config.individualPrices || []),
         };
 
         await savePhaseUnitMutation.mutateAsync(unitData);
@@ -332,6 +369,27 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                             />
                           </div>
                         </div>
+                        
+                        {/* Individual Unit Pricing */}
+                        {config.quantity > 0 && (
+                          <div className="mt-3">
+                            <Label className="text-xs font-medium">Individual Unit Prices</Label>
+                            <div className="grid grid-cols-2 gap-2 mt-2">
+                              {Array.from({ length: config.quantity }, (_, i) => (
+                                <div key={i} className="flex items-center space-x-2">
+                                  <Label className="text-xs w-12">Unit {i + 1}:</Label>
+                                  <Input
+                                    type="number"
+                                    value={config.individualPrices?.[i] || 0}
+                                    onChange={(e) => updateIndividualPrice(index, i, parseFloat(e.target.value) || 0)}
+                                    className="text-sm"
+                                    placeholder="Price"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   );
@@ -417,6 +475,8 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                         onToggleMethod={(method) => updateUnitConfig(index, 'contingencyCostsInputMethod', method)}
                         placeholder="Enter amount"
                         squareFootage={unitType?.squareFootage || 1}
+                        isContingency={true}
+                        totalCosts={metrics.totalCosts}
                       />
                     </div>
 

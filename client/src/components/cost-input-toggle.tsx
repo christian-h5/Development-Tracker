@@ -8,13 +8,15 @@ interface CostInputToggleProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  inputMethod: 'perUnit' | 'perSqFt';
-  onToggleMethod: (method: 'perUnit' | 'perSqFt') => void;
+  inputMethod: 'perUnit' | 'perSqFt' | 'percentage';
+  onToggleMethod: (method: 'perUnit' | 'perSqFt' | 'percentage') => void;
   disabled?: boolean;
   placeholder?: string;
   squareFootage?: number;
   isSalesCosts?: boolean;
   salesPrice?: number;
+  isContingency?: boolean;
+  totalCosts?: number;
 }
 
 export default function CostInputToggle({
@@ -27,21 +29,27 @@ export default function CostInputToggle({
   placeholder = "Enter amount",
   squareFootage = 1,
   isSalesCosts = false,
-  salesPrice = 0
+  salesPrice = 0,
+  isContingency = false,
+  totalCosts = 0
 }: CostInputToggleProps) {
   const numericValue = parseFloat(value) || 0;
 
   // Calculate the converted value
   const getConvertedValue = () => {
-    if (!numericValue || !squareFootage) return null;
+    if (!numericValue) return null;
 
-    if (inputMethod === 'perSqFt') {
+    if (inputMethod === 'perSqFt' && squareFootage) {
       // Show per unit equivalent
       return numericValue * squareFootage;
-    } else {
+    } else if (inputMethod === 'perUnit' && squareFootage) {
       // Show per sq ft equivalent
       return numericValue / squareFootage;
+    } else if (inputMethod === 'percentage' && totalCosts) {
+      // Show dollar amount from percentage
+      return (numericValue / 100) * totalCosts;
     }
+    return null;
   };
 
   // Calculate tiered commission if this is sales costs
@@ -98,6 +106,18 @@ export default function CostInputToggle({
             <Calculator className="w-3 h-3 mr-1" />
             Per Sq Ft
           </Button>
+          {isContingency && (
+            <Button
+              type="button"
+              variant={inputMethod === 'percentage' ? 'default' : 'secondary'}
+              size="sm"
+              className="rounded-none px-3 py-2 text-xs"
+              onClick={() => onToggleMethod('percentage')}
+              disabled={disabled}
+            >
+              %
+            </Button>
+          )}
         </div>
 
         <Input
@@ -110,7 +130,7 @@ export default function CostInputToggle({
         />
 
         <span className="text-xs text-gray-500 min-w-[60px]">
-          {inputMethod === 'perUnit' ? '/ unit' : '/ sq ft'}
+          {inputMethod === 'perUnit' ? '/ unit' : inputMethod === 'perSqFt' ? '/ sq ft' : '%'}
         </span>
       </div>
 
@@ -119,7 +139,7 @@ export default function CostInputToggle({
           = ${convertedValue.toLocaleString('en-US', { 
             minimumFractionDigits: 0, 
             maximumFractionDigits: 2 
-          })} {inputMethod === 'perSqFt' ? 'per unit' : 'per sq ft'}
+          })} {inputMethod === 'perSqFt' ? 'per unit' : inputMethod === 'perUnit' ? 'per sq ft' : 'total'}
         </div>
       )}
     </div>

@@ -36,7 +36,7 @@ export default function UnitCalculatorForm() {
   const [hardCostsInputMethod, setHardCostsInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
   const [softCostsInputMethod, setSoftCostsInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
   const [landCostsInputMethod, setLandCostsInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
-  const [contingencyCostsInputMethod, setContingencyCostsInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
+  const [contingencyCostsInputMethod, setContingencyCostsInputMethod] = useState<'perUnit' | 'perSqFt' | 'percentage'>('perUnit');
   const [salesCostsInputMethod, setSalesCostsInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
   const [lawyerFeesInputMethod, setLawyerFeesInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
   const [scenario1Price, setScenario1Price] = useState("");
@@ -131,9 +131,9 @@ export default function UnitCalculatorForm() {
     
     const scenarios = [
       { label: "Base Case", price: parseFloat(scenario1Price) || 0 },
-      { label: "Scenario 2", price: parseFloat(scenario2Price) || 0 },
-      { label: "Scenario 3", price: parseFloat(scenario3Price) || 0 },
-      { label: "Scenario 4", price: parseFloat(scenario4Price) || 0 },
+      { label: "Scenario 1", price: parseFloat(scenario2Price) || 0 },
+      { label: "Scenario 2", price: parseFloat(scenario3Price) || 0 },
+      { label: "Scenario 3", price: parseFloat(scenario4Price) || 0 },
     ].filter(s => s.price > 0);
 
     const calculated = scenarios.map(scenario => {
@@ -291,6 +291,8 @@ export default function UnitCalculatorForm() {
                 inputMethod={contingencyCostsInputMethod}
                 onToggleMethod={setContingencyCostsInputMethod}
                 squareFootage={parseFloat(squareFootage) || 1}
+                isContingency={true}
+                totalCosts={calculateBaseCosts()}
               />
             </div>
 
@@ -333,7 +335,7 @@ export default function UnitCalculatorForm() {
               </div>
               
               <div>
-                <Label htmlFor="scenario2">Scenario 2</Label>
+                <Label htmlFor="scenario2">Scenario 1</Label>
                 <Input
                   id="scenario2"
                   type="number"
@@ -344,7 +346,7 @@ export default function UnitCalculatorForm() {
               </div>
               
               <div>
-                <Label htmlFor="scenario3">Scenario 3</Label>
+                <Label htmlFor="scenario3">Scenario 2</Label>
                 <Input
                   id="scenario3"
                   type="number"
@@ -355,7 +357,7 @@ export default function UnitCalculatorForm() {
               </div>
               
               <div>
-                <Label htmlFor="scenario4">Scenario 4</Label>
+                <Label htmlFor="scenario4">Scenario 3</Label>
                 <Input
                   id="scenario4"
                   type="number"

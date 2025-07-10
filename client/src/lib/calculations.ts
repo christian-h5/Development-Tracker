@@ -17,9 +17,11 @@ export function calculateNetProfitWithCustomCosts(
   return salesPrice - totalCosts;
 }
 
-export function convertCostPerMethod(cost: number, method: string, squareFootage: number): number {
+export function convertCostPerMethod(cost: number, method: 'perUnit' | 'perSqFt' | 'percentage', squareFootage: number, totalCosts?: number): number {
   if (method === 'perSqFt') {
     return cost * squareFootage;
+  } else if (method === 'percentage' && totalCosts) {
+    return (cost / 100) * totalCosts;
   }
   return cost;
 }
