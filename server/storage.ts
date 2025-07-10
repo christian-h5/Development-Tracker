@@ -112,7 +112,12 @@ export class MemStorage implements IStorage {
   }
 
   async createProject(insertProject: InsertProject): Promise<Project> {
-    const project: Project = { ...insertProject, id: this.currentProjectId++ };
+    const project: Project = { 
+      ...insertProject, 
+      id: this.currentProjectId++,
+      description: insertProject.description || null,
+      totalPhases: insertProject.totalPhases || 0
+    };
     this.projects.set(project.id, project);
     return project;
   }
@@ -150,7 +155,11 @@ export class MemStorage implements IStorage {
   }
 
   async createPhase(insertPhase: InsertPhase): Promise<Phase> {
-    const phase: Phase = { ...insertPhase, id: this.currentPhaseId++ };
+    const phase: Phase = { 
+      ...insertPhase, 
+      id: this.currentPhaseId++,
+      totalSquareFootage: insertPhase.totalSquareFootage || null
+    };
     this.phases.set(phase.id, phase);
     return phase;
   }
@@ -167,11 +176,11 @@ export class MemStorage implements IStorage {
   async deletePhase(id: number): Promise<void> {
     this.phases.delete(id);
     // Also delete associated phase units
-    for (const [unitId, unit] of this.phaseUnits.entries()) {
-      if (unit.phaseId === id) {
-        this.phaseUnits.delete(unitId);
-      }
-    }
+    const unitsToDelete = Array.from(this.phaseUnits.entries())
+      .filter(([_, unit]) => unit.phaseId === id)
+      .map(([unitId, _]) => unitId);
+    
+    unitsToDelete.forEach(unitId => this.phaseUnits.delete(unitId));
   }
 
   async getUnitTypes(): Promise<UnitType[]> {
@@ -179,7 +188,13 @@ export class MemStorage implements IStorage {
   }
 
   async createUnitType(insertUnitType: InsertUnitType): Promise<UnitType> {
-    const unitType: UnitType = { ...insertUnitType, id: this.currentUnitTypeId++ };
+    const unitType: UnitType = { 
+      ...insertUnitType, 
+      id: this.currentUnitTypeId++,
+      bedrooms: insertUnitType.bedrooms || 0,
+      lockOffFlexRooms: insertUnitType.lockOffFlexRooms || 0,
+      totalUnitsInDevelopment: insertUnitType.totalUnitsInDevelopment || 0
+    };
     this.unitTypes.set(unitType.id, unitType);
     return unitType;
   }
@@ -194,7 +209,23 @@ export class MemStorage implements IStorage {
   }
 
   async createPhaseUnit(insertPhaseUnit: InsertPhaseUnit): Promise<PhaseUnit> {
-    const phaseUnit: PhaseUnit = { ...insertPhaseUnit, id: this.currentPhaseUnitId++ };
+    const phaseUnit: PhaseUnit = { 
+      ...insertPhaseUnit, 
+      id: this.currentPhaseUnitId++,
+      hardCosts: insertPhaseUnit.hardCosts || null,
+      softCosts: insertPhaseUnit.softCosts || null,
+      landCosts: insertPhaseUnit.landCosts || null,
+      salesPrice: insertPhaseUnit.salesPrice || null,
+      contingencyCosts: insertPhaseUnit.contingencyCosts || null,
+      salesCosts: insertPhaseUnit.salesCosts || null,
+      lawyerFees: insertPhaseUnit.lawyerFees || null,
+      hardCostsInputMethod: insertPhaseUnit.hardCostsInputMethod || 'perUnit',
+      softCostsInputMethod: insertPhaseUnit.softCostsInputMethod || 'perUnit',
+      landCostsInputMethod: insertPhaseUnit.landCostsInputMethod || 'perUnit',
+      contingencyCostsInputMethod: insertPhaseUnit.contingencyCostsInputMethod || 'perUnit',
+      salesCostsInputMethod: insertPhaseUnit.salesCostsInputMethod || 'perUnit',
+      lawyerFeesInputMethod: insertPhaseUnit.lawyerFeesInputMethod || 'perUnit'
+    };
     this.phaseUnits.set(phaseUnit.id, phaseUnit);
     return phaseUnit;
   }
@@ -235,7 +266,20 @@ export class MemStorage implements IStorage {
       this.calculatorScenarios.set(existing.id, updated);
       return updated;
     } else {
-      const scenario: CalculatorScenario = { ...insertScenario, id: this.currentScenarioId++ };
+      const scenario: CalculatorScenario = { 
+        ...insertScenario, 
+        id: this.currentScenarioId++,
+        hardCostsInputMethod: insertScenario.hardCostsInputMethod || 'perUnit',
+        softCostsInputMethod: insertScenario.softCostsInputMethod || 'perUnit',
+        landCostsInputMethod: insertScenario.landCostsInputMethod || 'perUnit',
+        contingencyCostsInputMethod: insertScenario.contingencyCostsInputMethod || 'perUnit',
+        salesCostsInputMethod: insertScenario.salesCostsInputMethod || 'perUnit',
+        lawyerFeesInputMethod: insertScenario.lawyerFeesInputMethod || 'perUnit',
+        scenario1Price: insertScenario.scenario1Price || null,
+        scenario2Price: insertScenario.scenario2Price || null,
+        scenario3Price: insertScenario.scenario3Price || null,
+        scenario4Price: insertScenario.scenario4Price || null
+      };
       this.calculatorScenarios.set(scenario.id, scenario);
       return scenario;
     }

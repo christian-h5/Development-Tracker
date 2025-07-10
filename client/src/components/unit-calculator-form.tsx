@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calculator, FileText, FileSpreadsheet, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { calculateSalesCosts, calculateNetProfit, calculateMargin, calculateProfitPerSqFt, calculateROI, formatCurrency, formatPercent } from "@/lib/calculations";
+import { calculateSalesCosts, calculateNetProfit, calculateMargin, calculateProfitPerSqFt, calculateROI, calculateNetProfitWithCustomCosts, convertCostPerMethod, formatCurrency, formatPercent } from "@/lib/calculations";
 import SensitivityTable from "@/components/sensitivity-table";
+import CostInputToggle from "@/components/cost-input-toggle";
 import type { UnitType, CalculatorScenario } from "@shared/schema";
 
 interface ScenarioData {
@@ -30,6 +31,14 @@ export default function UnitCalculatorForm() {
   const [softCosts, setSoftCosts] = useState("");
   const [landCosts, setLandCosts] = useState("");
   const [contingencyCosts, setContingencyCosts] = useState("");
+  const [salesCosts, setSalesCosts] = useState("");
+  const [lawyerFees, setLawyerFees] = useState("");
+  const [hardCostsInputMethod, setHardCostsInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
+  const [softCostsInputMethod, setSoftCostsInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
+  const [landCostsInputMethod, setLandCostsInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
+  const [contingencyCostsInputMethod, setContingencyCostsInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
+  const [salesCostsInputMethod, setSalesCostsInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
+  const [lawyerFeesInputMethod, setLawyerFeesInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
   const [scenario1Price, setScenario1Price] = useState("");
   const [scenario2Price, setScenario2Price] = useState("");
   const [scenario3Price, setScenario3Price] = useState("");
@@ -65,6 +74,14 @@ export default function UnitCalculatorForm() {
       setSoftCosts(savedScenario.softCosts || "");
       setLandCosts(savedScenario.landCosts || "");
       setContingencyCosts(savedScenario.contingencyCosts || "");
+      setSalesCosts(savedScenario.salesCosts || "");
+      setLawyerFees(savedScenario.lawyerFees || "");
+      setHardCostsInputMethod(savedScenario.hardCostsInputMethod as 'perUnit' | 'perSqFt');
+      setSoftCostsInputMethod(savedScenario.softCostsInputMethod as 'perUnit' | 'perSqFt');
+      setLandCostsInputMethod(savedScenario.landCostsInputMethod as 'perUnit' | 'perSqFt');
+      setContingencyCostsInputMethod(savedScenario.contingencyCostsInputMethod as 'perUnit' | 'perSqFt');
+      setSalesCostsInputMethod(savedScenario.salesCostsInputMethod as 'perUnit' | 'perSqFt');
+      setLawyerFeesInputMethod(savedScenario.lawyerFeesInputMethod as 'perUnit' | 'perSqFt');
       setScenario1Price(savedScenario.scenario1Price || "");
       setScenario2Price(savedScenario.scenario2Price || "");
       setScenario3Price(savedScenario.scenario3Price || "");
@@ -85,16 +102,24 @@ export default function UnitCalculatorForm() {
   const selectedUnitType = unitTypes.find(ut => ut.id === selectedUnitTypeId);
 
   const calculateBaseCosts = () => {
-    const hard = parseFloat(hardCosts) || 0;
-    const soft = parseFloat(softCosts) || 0;
-    const land = parseFloat(landCosts) || 0;
-    const contingency = parseFloat(contingencyCosts) || 0;
-    return hard + soft + land + contingency;
+    const sqFt = parseFloat(squareFootage) || 1;
+    const hard = convertCostPerMethod(parseFloat(hardCosts) || 0, hardCostsInputMethod, sqFt);
+    const soft = convertCostPerMethod(parseFloat(softCosts) || 0, softCostsInputMethod, sqFt);
+    const land = convertCostPerMethod(parseFloat(landCosts) || 0, landCostsInputMethod, sqFt);
+    const contingency = convertCostPerMethod(parseFloat(contingencyCosts) || 0, contingencyCostsInputMethod, sqFt);
+    const sales = convertCostPerMethod(parseFloat(salesCosts) || 0, salesCostsInputMethod, sqFt);
+    const lawyer = convertCostPerMethod(parseFloat(lawyerFees) || 0, lawyerFeesInputMethod, sqFt);
+    return hard + soft + land + contingency + sales + lawyer;
   };
 
   const calculateScenarios = () => {
-    const baseCosts = calculateBaseCosts();
     const sqFt = parseFloat(squareFootage) || 1;
+    const hardCost = convertCostPerMethod(parseFloat(hardCosts) || 0, hardCostsInputMethod, sqFt);
+    const softCost = convertCostPerMethod(parseFloat(softCosts) || 0, softCostsInputMethod, sqFt);
+    const landCost = convertCostPerMethod(parseFloat(landCosts) || 0, landCostsInputMethod, sqFt);
+    const contingencyCost = convertCostPerMethod(parseFloat(contingencyCosts) || 0, contingencyCostsInputMethod, sqFt);
+    const salesCost = convertCostPerMethod(parseFloat(salesCosts) || 0, salesCostsInputMethod, sqFt);
+    const lawyerFee = convertCostPerMethod(parseFloat(lawyerFees) || 0, lawyerFeesInputMethod, sqFt);
     
     const scenarios = [
       { label: "Conservative", price: parseFloat(scenario1Price) || 0 },
@@ -104,17 +129,16 @@ export default function UnitCalculatorForm() {
     ].filter(s => s.price > 0);
 
     const calculated = scenarios.map(scenario => {
-      const salesCosts = calculateSalesCosts(scenario.price);
-      const totalCosts = baseCosts + salesCosts;
+      const totalCosts = hardCost + softCost + landCost + contingencyCost + salesCost + lawyerFee;
       const netProfit = scenario.price - totalCosts;
       const margin = calculateMargin(scenario.price, netProfit);
       const profitPerSqFt = calculateProfitPerSqFt(netProfit, sqFt);
-      const roi = calculateROI(netProfit, baseCosts);
+      const roi = calculateROI(netProfit, totalCosts);
 
       return {
         label: scenario.label,
         salesPrice: scenario.price,
-        salesCosts,
+        salesCosts: salesCost,
         totalCosts,
         netProfit,
         margin,
@@ -138,6 +162,14 @@ export default function UnitCalculatorForm() {
       softCosts: softCosts,
       landCosts: landCosts,
       contingencyCosts: contingencyCosts,
+      salesCosts: salesCosts,
+      lawyerFees: lawyerFees,
+      hardCostsInputMethod: hardCostsInputMethod,
+      softCostsInputMethod: softCostsInputMethod,
+      landCostsInputMethod: landCostsInputMethod,
+      contingencyCostsInputMethod: contingencyCostsInputMethod,
+      salesCostsInputMethod: salesCostsInputMethod,
+      lawyerFeesInputMethod: lawyerFeesInputMethod,
       scenario1Price: scenario1Price || null,
       scenario2Price: scenario2Price || null,
       scenario3Price: scenario3Price || null,
@@ -191,49 +223,53 @@ export default function UnitCalculatorForm() {
 
             <h4 className="text-md font-semibold text-gray-900 mb-4">Cost Breakdown</h4>
             <div className="space-y-4">
-              <div>
-                <Label htmlFor="hardCosts">Hard Costs</Label>
-                <Input
-                  id="hardCosts"
-                  type="number"
-                  value={hardCosts}
-                  onChange={(e) => setHardCosts(e.target.value)}
-                  placeholder="Enter amount"
-                />
-              </div>
+              <CostInputToggle
+                label="Hard Costs"
+                value={hardCosts}
+                onChange={setHardCosts}
+                inputMethod={hardCostsInputMethod}
+                onToggleMethod={setHardCostsInputMethod}
+              />
               
-              <div>
-                <Label htmlFor="softCosts">Soft Costs (excluding Land)</Label>
-                <Input
-                  id="softCosts"
-                  type="number"
-                  value={softCosts}
-                  onChange={(e) => setSoftCosts(e.target.value)}
-                  placeholder="Enter amount"
-                />
-              </div>
+              <CostInputToggle
+                label="Soft Costs (excluding Land)"
+                value={softCosts}
+                onChange={setSoftCosts}
+                inputMethod={softCostsInputMethod}
+                onToggleMethod={setSoftCostsInputMethod}
+              />
               
-              <div>
-                <Label htmlFor="landCosts">Land Costs</Label>
-                <Input
-                  id="landCosts"
-                  type="number"
-                  value={landCosts}
-                  onChange={(e) => setLandCosts(e.target.value)}
-                  placeholder="Enter amount"
-                />
-              </div>
+              <CostInputToggle
+                label="Land Costs"
+                value={landCosts}
+                onChange={setLandCosts}
+                inputMethod={landCostsInputMethod}
+                onToggleMethod={setLandCostsInputMethod}
+              />
               
-              <div>
-                <Label htmlFor="contingencyCosts">Contingency/Other Costs</Label>
-                <Input
-                  id="contingencyCosts"
-                  type="number"
-                  value={contingencyCosts}
-                  onChange={(e) => setContingencyCosts(e.target.value)}
-                  placeholder="Enter amount"
-                />
-              </div>
+              <CostInputToggle
+                label="Contingency/Other Costs"
+                value={contingencyCosts}
+                onChange={setContingencyCosts}
+                inputMethod={contingencyCostsInputMethod}
+                onToggleMethod={setContingencyCostsInputMethod}
+              />
+              
+              <CostInputToggle
+                label="Sales Costs"
+                value={salesCosts}
+                onChange={setSalesCosts}
+                inputMethod={salesCostsInputMethod}
+                onToggleMethod={setSalesCostsInputMethod}
+              />
+              
+              <CostInputToggle
+                label="Lawyer Fees"
+                value={lawyerFees}
+                onChange={setLawyerFees}
+                inputMethod={lawyerFeesInputMethod}
+                onToggleMethod={setLawyerFeesInputMethod}
+              />
             </div>
 
             <div className="mt-6 bg-gray-50 rounded-lg p-4">
@@ -327,8 +363,8 @@ export default function UnitCalculatorForm() {
               <div className="flex items-start">
                 <Info className="text-primary mt-1 mr-2 h-4 w-4" />
                 <div className="text-sm text-gray-700">
-                  <p className="font-medium mb-1">Sales Cost Calculation:</p>
-                  <p>5% commission on first $100,000 + 3% on remaining balance</p>
+                  <p className="font-medium mb-1">Cost Input Methods:</p>
+                  <p>Toggle between "Per Unit" (total cost per unit) and "Per Sq Ft" (cost multiplied by square footage)</p>
                 </div>
               </div>
             </div>

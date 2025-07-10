@@ -4,6 +4,26 @@ export function calculateSalesCosts(salesPrice: number): number {
   return (first100k * 0.05) + (balance * 0.03);
 }
 
+export function calculateNetProfitWithCustomCosts(
+  salesPrice: number, 
+  hardCosts: number, 
+  softCosts: number, 
+  landCosts: number, 
+  contingencyCosts: number,
+  salesCosts: number,
+  lawyerFees: number
+): number {
+  const totalCosts = hardCosts + softCosts + landCosts + contingencyCosts + salesCosts + lawyerFees;
+  return salesPrice - totalCosts;
+}
+
+export function convertCostPerMethod(cost: number, method: string, squareFootage: number): number {
+  if (method === 'perSqFt') {
+    return cost * squareFootage;
+  }
+  return cost;
+}
+
 export function calculateNetProfit(salesPrice: number, hardCosts: number, softCosts: number, landCosts: number, contingencyCosts: number): number {
   const salesCosts = calculateSalesCosts(salesPrice);
   const totalCosts = hardCosts + softCosts + landCosts + contingencyCosts + salesCosts;

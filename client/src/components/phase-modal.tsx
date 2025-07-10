@@ -11,7 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { formatCurrency, calculateSalesCosts, calculateNetProfit, calculateMargin } from "@/lib/calculations";
+import { formatCurrency, calculateSalesCosts, calculateNetProfit, calculateMargin, convertCostPerMethod } from "@/lib/calculations";
+import CostInputToggle from "@/components/cost-input-toggle";
 import type { PhaseWithUnits, UnitType, PhaseUnit } from "@shared/schema";
 
 interface PhaseModalProps {
@@ -31,7 +32,14 @@ interface UnitConfig {
   landCosts: number;
   salesPrice: number;
   contingencyCosts: number;
-  inputMethod: 'perUnit' | 'perSqFt';
+  salesCosts: number;
+  lawyerFees: number;
+  hardCostsInputMethod: 'perUnit' | 'perSqFt';
+  softCostsInputMethod: 'perUnit' | 'perSqFt';
+  landCostsInputMethod: 'perUnit' | 'perSqFt';
+  contingencyCostsInputMethod: 'perUnit' | 'perSqFt';
+  salesCostsInputMethod: 'perUnit' | 'perSqFt';
+  lawyerFeesInputMethod: 'perUnit' | 'perSqFt';
 }
 
 export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }: PhaseModalProps) {
@@ -85,7 +93,14 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
         landCosts: parseFloat(unit.landCosts || "0"),
         salesPrice: parseFloat(unit.salesPrice || "0"),
         contingencyCosts: parseFloat(unit.contingencyCosts || "0"),
-        inputMethod: (unit.inputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
+        salesCosts: parseFloat(unit.salesCosts || "0"),
+        lawyerFees: parseFloat(unit.lawyerFees || "0"),
+        hardCostsInputMethod: (unit.hardCostsInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
+        softCostsInputMethod: (unit.softCostsInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
+        landCostsInputMethod: (unit.landCostsInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
+        contingencyCostsInputMethod: (unit.contingencyCostsInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
+        salesCostsInputMethod: (unit.salesCostsInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
+        lawyerFeesInputMethod: (unit.lawyerFeesInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
       }));
       setUnitConfigs(configs);
     }
@@ -101,7 +116,14 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
         landCosts: 0,
         salesPrice: 0,
         contingencyCosts: 0,
-        inputMethod: 'perUnit',
+        salesCosts: 0,
+        lawyerFees: 0,
+        hardCostsInputMethod: 'perUnit',
+        softCostsInputMethod: 'perUnit',
+        landCostsInputMethod: 'perUnit',
+        contingencyCostsInputMethod: 'perUnit',
+        salesCostsInputMethod: 'perUnit',
+        lawyerFeesInputMethod: 'perUnit',
       }]);
     }
   };
@@ -124,21 +146,14 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
     const unitType = getUnitType(config.unitTypeId);
     if (!unitType) return { salesCosts: 0, totalCosts: 0, netProfit: 0, margin: 0 };
 
-    let hardCosts = config.hardCosts;
-    let softCosts = config.softCosts;
-    let landCosts = config.landCosts;
-    let contingencyCosts = config.contingencyCosts;
+    const hardCosts = convertCostPerMethod(config.hardCosts, config.hardCostsInputMethod, unitType.squareFootage);
+    const softCosts = convertCostPerMethod(config.softCosts, config.softCostsInputMethod, unitType.squareFootage);
+    const landCosts = convertCostPerMethod(config.landCosts, config.landCostsInputMethod, unitType.squareFootage);
+    const contingencyCosts = convertCostPerMethod(config.contingencyCosts, config.contingencyCostsInputMethod, unitType.squareFootage);
+    const salesCosts = convertCostPerMethod(config.salesCosts, config.salesCostsInputMethod, unitType.squareFootage);
+    const lawyerFees = convertCostPerMethod(config.lawyerFees, config.lawyerFeesInputMethod, unitType.squareFootage);
 
-    // Convert per sq ft to per unit if needed
-    if (config.inputMethod === 'perSqFt') {
-      hardCosts *= unitType.squareFootage;
-      softCosts *= unitType.squareFootage;
-      landCosts *= unitType.squareFootage;
-      contingencyCosts *= unitType.squareFootage;
-    }
-
-    const salesCosts = calculateSalesCosts(config.salesPrice);
-    const totalCosts = hardCosts + softCosts + landCosts + contingencyCosts + salesCosts;
+    const totalCosts = hardCosts + softCosts + landCosts + contingencyCosts + salesCosts + lawyerFees;
     const netProfit = config.salesPrice - totalCosts;
     const margin = calculateMargin(config.salesPrice, netProfit);
 
@@ -164,30 +179,24 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
         const unitType = getUnitType(config.unitTypeId);
         if (!unitType) continue;
 
-        let hardCosts = config.hardCosts;
-        let softCosts = config.softCosts;
-        let landCosts = config.landCosts;
-        let contingencyCosts = config.contingencyCosts;
-
-        // Convert per sq ft to per unit for storage
-        if (config.inputMethod === 'perSqFt') {
-          hardCosts *= unitType.squareFootage;
-          softCosts *= unitType.squareFootage;
-          landCosts *= unitType.squareFootage;
-          contingencyCosts *= unitType.squareFootage;
-        }
-
         const unitData = {
           id: config.id,
           phaseId,
           unitTypeId: config.unitTypeId,
           quantity: config.quantity,
-          hardCosts: hardCosts.toString(),
-          softCosts: softCosts.toString(),
-          landCosts: landCosts.toString(),
+          hardCosts: config.hardCosts.toString(),
+          softCosts: config.softCosts.toString(),
+          landCosts: config.landCosts.toString(),
           salesPrice: config.salesPrice.toString(),
-          contingencyCosts: contingencyCosts.toString(),
-          inputMethod: config.inputMethod,
+          contingencyCosts: config.contingencyCosts.toString(),
+          salesCosts: config.salesCosts.toString(),
+          lawyerFees: config.lawyerFees.toString(),
+          hardCostsInputMethod: config.hardCostsInputMethod,
+          softCostsInputMethod: config.softCostsInputMethod,
+          landCostsInputMethod: config.landCostsInputMethod,
+          contingencyCostsInputMethod: config.contingencyCostsInputMethod,
+          salesCostsInputMethod: config.salesCostsInputMethod,
+          lawyerFeesInputMethod: config.lawyerFeesInputMethod,
         };
 
         await savePhaseUnitMutation.mutateAsync(unitData);
@@ -295,7 +304,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                           </Button>
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 gap-3">
                           <div>
                             <Label className="text-xs">Quantity</Label>
                             <Input
@@ -304,23 +313,6 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                               onChange={(e) => updateUnitConfig(index, 'quantity', parseInt(e.target.value) || 0)}
                               className="text-sm"
                             />
-                          </div>
-                          <div>
-                            <Label className="text-xs">Input Method</Label>
-                            <RadioGroup
-                              value={config.inputMethod}
-                              onValueChange={(value) => updateUnitConfig(index, 'inputMethod', value)}
-                              className="flex space-x-4 mt-1"
-                            >
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="perUnit" id={`perUnit-${index}`} />
-                                <Label htmlFor={`perUnit-${index}`} className="text-xs">Per Unit</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="perSqFt" id={`perSqFt-${index}`} />
-                                <Label htmlFor={`perSqFt-${index}`} className="text-xs">Per Sq Ft</Label>
-                              </div>
-                            </RadioGroup>
                           </div>
                         </div>
                       </CardContent>
@@ -344,39 +336,63 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                   <CardContent className="p-4">
                     <div className="flex justify-between items-center mb-4">
                       <h5 className="font-medium">{unitType?.name || 'Unit'}</h5>
-                      <Badge>{config.inputMethod === 'perUnit' ? 'Per Unit' : 'Per Sq Ft'}</Badge>
+                      <Badge variant="outline">{unitType?.squareFootage} sq ft</Badge>
                     </div>
                     
                     <div className="space-y-3">
-                      <div>
-                        <Label className="text-sm">Hard Costs</Label>
-                        <Input
-                          type="number"
-                          value={config.hardCosts}
-                          onChange={(e) => updateUnitConfig(index, 'hardCosts', parseFloat(e.target.value) || 0)}
-                          placeholder="Enter amount"
-                        />
-                      </div>
+                      <CostInputToggle
+                        label="Hard Costs"
+                        value={config.hardCosts.toString()}
+                        onChange={(value) => updateUnitConfig(index, 'hardCosts', parseFloat(value) || 0)}
+                        inputMethod={config.hardCostsInputMethod}
+                        onToggleMethod={(method) => updateUnitConfig(index, 'hardCostsInputMethod', method)}
+                        placeholder="Enter amount"
+                      />
                       
-                      <div>
-                        <Label className="text-sm">Soft Costs (excluding Land)</Label>
-                        <Input
-                          type="number"
-                          value={config.softCosts}
-                          onChange={(e) => updateUnitConfig(index, 'softCosts', parseFloat(e.target.value) || 0)}
-                          placeholder="Enter amount"
-                        />
-                      </div>
+                      <CostInputToggle
+                        label="Soft Costs (excluding Land)"
+                        value={config.softCosts.toString()}
+                        onChange={(value) => updateUnitConfig(index, 'softCosts', parseFloat(value) || 0)}
+                        inputMethod={config.softCostsInputMethod}
+                        onToggleMethod={(method) => updateUnitConfig(index, 'softCostsInputMethod', method)}
+                        placeholder="Enter amount"
+                      />
                       
-                      <div>
-                        <Label className="text-sm">Land Costs</Label>
-                        <Input
-                          type="number"
-                          value={config.landCosts}
-                          onChange={(e) => updateUnitConfig(index, 'landCosts', parseFloat(e.target.value) || 0)}
-                          placeholder="Enter amount"
-                        />
-                      </div>
+                      <CostInputToggle
+                        label="Land Costs"
+                        value={config.landCosts.toString()}
+                        onChange={(value) => updateUnitConfig(index, 'landCosts', parseFloat(value) || 0)}
+                        inputMethod={config.landCostsInputMethod}
+                        onToggleMethod={(method) => updateUnitConfig(index, 'landCostsInputMethod', method)}
+                        placeholder="Enter amount"
+                      />
+                      
+                      <CostInputToggle
+                        label="Contingency/Other Costs"
+                        value={config.contingencyCosts.toString()}
+                        onChange={(value) => updateUnitConfig(index, 'contingencyCosts', parseFloat(value) || 0)}
+                        inputMethod={config.contingencyCostsInputMethod}
+                        onToggleMethod={(method) => updateUnitConfig(index, 'contingencyCostsInputMethod', method)}
+                        placeholder="Enter amount"
+                      />
+                      
+                      <CostInputToggle
+                        label="Sales Costs"
+                        value={config.salesCosts.toString()}
+                        onChange={(value) => updateUnitConfig(index, 'salesCosts', parseFloat(value) || 0)}
+                        inputMethod={config.salesCostsInputMethod}
+                        onToggleMethod={(method) => updateUnitConfig(index, 'salesCostsInputMethod', method)}
+                        placeholder="Enter amount"
+                      />
+                      
+                      <CostInputToggle
+                        label="Lawyer Fees"
+                        value={config.lawyerFees.toString()}
+                        onChange={(value) => updateUnitConfig(index, 'lawyerFees', parseFloat(value) || 0)}
+                        inputMethod={config.lawyerFeesInputMethod}
+                        onToggleMethod={(method) => updateUnitConfig(index, 'lawyerFeesInputMethod', method)}
+                        placeholder="Enter amount"
+                      />
                       
                       <div>
                         <Label className="text-sm">Sales Price</Label>
@@ -387,30 +403,11 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                           placeholder="Enter amount"
                         />
                       </div>
-                      
-                      <div>
-                        <Label className="text-sm">Contingency/Other Costs</Label>
-                        <Input
-                          type="number"
-                          value={config.contingencyCosts}
-                          onChange={(e) => updateUnitConfig(index, 'contingencyCosts', parseFloat(e.target.value) || 0)}
-                          placeholder="Enter amount"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Auto-calculated Sales Costs */}
-                    <div className="bg-blue-50 rounded-lg p-3 mt-4">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm font-medium text-gray-700">Sales Costs (Auto-calculated)</span>
-                        <span className="text-xs text-gray-500">5% first $100k, 3% balance</span>
-                      </div>
-                      <div className="text-lg font-semibold text-primary">{formatCurrency(metrics.salesCosts)}</div>
                     </div>
 
                     {/* Summary */}
                     <div className="bg-gray-50 rounded-lg p-3 mt-4">
-                      <h6 className="font-medium text-gray-900 mb-2">Cost Summary ({config.inputMethod === 'perUnit' ? 'Per Unit' : 'Per Sq Ft'})</h6>
+                      <h6 className="font-medium text-gray-900 mb-2">Cost Summary (Per Unit)</h6>
                       <div className="space-y-1 text-sm">
                         <div className="flex justify-between">
                           <span>Total Costs:</span>
@@ -422,13 +419,13 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                         </div>
                         <div className="flex justify-between border-t border-gray-300 pt-1">
                           <span className="font-medium">Net Profit:</span>
-                          <span className={`font-semibold ${metrics.netProfit >= 0 ? 'text-success' : 'text-error'}`}>
+                          <span className={`font-semibold ${metrics.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {formatCurrency(metrics.netProfit)}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="font-medium">Margin:</span>
-                          <span className={`font-semibold ${metrics.margin >= 0 ? 'text-success' : 'text-error'}`}>
+                          <span className={`font-semibold ${metrics.margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {metrics.margin.toFixed(1)}%
                           </span>
                         </div>
