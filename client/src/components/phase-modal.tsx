@@ -138,13 +138,13 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
   const updateUnitConfig = (index: number, field: keyof UnitConfig, value: any) => {
     const updated = [...unitConfigs];
     updated[index] = { ...updated[index], [field]: value };
-    
+
     // Update individual prices array when quantity changes
     if (field === 'quantity') {
       const newQuantity = parseInt(value) || 0;
       const currentPrices = updated[index].individualPrices || [];
       const basePrice = updated[index].salesPrice || 0;
-      
+
       if (newQuantity > currentPrices.length) {
         // Add new entries with base price
         const newPrices = [...currentPrices, ...Array(newQuantity - currentPrices.length).fill(basePrice)];
@@ -154,14 +154,14 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
         updated[index].individualPrices = currentPrices.slice(0, newQuantity);
       }
     }
-    
+
     // Update all individual prices when base sales price changes
     if (field === 'salesPrice') {
       const newPrice = parseFloat(value) || 0;
       const currentPrices = updated[index].individualPrices || [];
       updated[index].individualPrices = currentPrices.map(price => price === 0 ? newPrice : price);
     }
-    
+
     setUnitConfigs(updated);
   };
 
@@ -275,7 +275,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                   placeholder="e.g., Phase 1"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="phaseStatus">Status</Label>
                 <Select value={phaseStatus} onValueChange={setPhaseStatus}>
@@ -311,7 +311,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                   Add Unit Type
                 </Button>
               </div>
-              
+
               <div className="space-y-3">
                 {unitConfigs.map((config, index) => {
                   const unitType = getUnitType(config.unitTypeId);
@@ -347,7 +347,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                        
+
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <Label className="text-xs">Quantity</Label>
@@ -369,7 +369,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                             />
                           </div>
                         </div>
-                        
+
                         {/* Individual Unit Pricing */}
                         {config.quantity > 0 && (
                           <div className="mt-3">
@@ -401,11 +401,11 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
           {/* Cost Input Section */}
           <div>
             <h4 className="text-md font-semibold text-gray-900 mb-4">Cost Input</h4>
-            
+
             {unitConfigs.map((config, index) => {
               const unitType = getUnitType(config.unitTypeId);
               const metrics = calculateUnitMetrics(config);
-              
+
               return (
                 <Card key={index} className="mb-4">
                   <CardContent className="p-4">
@@ -413,7 +413,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                       <h5 className="font-medium">{unitType?.name || 'Unit'}</h5>
                       <Badge variant="outline">{unitType?.squareFootage} sq ft</Badge>
                     </div>
-                    
+
                     <div className="space-y-3">
                       <CostInputToggle
                         label="Hard Costs"
@@ -424,7 +424,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                         placeholder="Enter amount"
                         squareFootage={unitType?.squareFootage || 1}
                       />
-                      
+
                       <CostInputToggle
                         label="Soft Costs (excluding Land)"
                         value={config.softCosts.toString()}
@@ -434,7 +434,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                         placeholder="Enter amount"
                         squareFootage={unitType?.squareFootage || 1}
                       />
-                      
+
                       <CostInputToggle
                         label="Land Costs"
                         value={config.landCosts.toString()}
@@ -444,7 +444,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                         placeholder="Enter amount"
                         squareFootage={unitType?.squareFootage || 1}
                       />
-                      
+
                       <CostInputToggle
                         label="Sales Costs (5% on first $100k, 3% on balance)"
                         value={config.salesCosts.toString()}
@@ -456,7 +456,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                         isSalesCosts={true}
                         salesPrice={config.salesPrice}
                       />
-                      
+
                       <CostInputToggle
                         label="Lawyer Fees"
                         value={config.lawyerFees.toString()}
@@ -466,7 +466,7 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
                         placeholder="Enter amount"
                         squareFootage={unitType?.squareFootage || 1}
                       />
-                      
+
                       <CostInputToggle
                         label="Contingency/Other Costs"
                         value={config.contingencyCosts.toString()}
@@ -512,14 +512,22 @@ export default function PhaseModal({ phase, isNew, projectId, onClose, onSave }:
             })}
           </div>
         </div>
-        
+
         <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200 px-6 pb-6">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={savePhaseMutation.isPending}>
-            {savePhaseMutation.isPending ? "Saving..." : "Save Phase"}
-          </Button>
+          <Button 
+                onClick={onClose}
+                variant="outline"
+                className="border-gray-300 hover:bg-gray-50 font-medium"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSave}
+                disabled={savePhaseMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
+              >
+                {savePhaseMutation.isPending ? "Saving..." : "Save Phase"}
+              </Button>
         </div>
       </DialogContent>
     </Dialog>

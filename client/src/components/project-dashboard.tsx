@@ -48,10 +48,13 @@ export default function ProjectDashboard({ projectId, onAddPhase }: ProjectDashb
               <h2 className="text-2xl font-semibold text-gray-900">{project.name}</h2>
               <p className="text-gray-600 mt-1">{project.description}</p>
             </div>
-            <Button onClick={onAddPhase} className="bg-primary hover:bg-primary/90">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Phase
-            </Button>
+            <Button 
+            onClick={onAddPhase}
+            className="bg-primary hover:bg-primary/90"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Phase
+          </Button>
           </div>
 
           {/* Key Metrics Cards */}
@@ -65,7 +68,7 @@ export default function ProjectDashboard({ projectId, onAddPhase }: ProjectDashb
                 <Layers className="text-2xl text-blue-200 h-8 w-8" />
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
               <div className="flex items-center justify-between">
                 <div>
@@ -75,7 +78,7 @@ export default function ProjectDashboard({ projectId, onAddPhase }: ProjectDashb
                 <CheckCircle className="text-2xl text-green-200 h-8 w-8" />
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-6 text-white">
               <div className="flex items-center justify-between">
                 <div>
@@ -85,7 +88,7 @@ export default function ProjectDashboard({ projectId, onAddPhase }: ProjectDashb
                 <Home className="text-2xl text-orange-200 h-8 w-8" />
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
               <div className="flex items-center justify-between">
                 <div>

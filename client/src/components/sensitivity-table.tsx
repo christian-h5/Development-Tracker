@@ -1,6 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { formatCurrency, formatPercent, calculateROI } from "@/lib/calculations";
+import { useState } from "react";
 
 interface ScenarioData {
   label: string;
@@ -15,9 +22,72 @@ interface ScenarioData {
 
 interface SensitivityTableProps {
   scenarios: ScenarioData[];
+  basePrice?: number;
+  onGenerateSensitivity?: (scenarios: ScenarioData[]) => void;
 }
 
-export default function SensitivityTable({ scenarios }: SensitivityTableProps) {
+export default function SensitivityTable({ scenarios, basePrice = 0, onGenerateSensitivity }: SensitivityTableProps) {
+  const [sensitivityType, setSensitivityType] = useState<'percentage' | 'dollar'>('percentage');
+  const [sensitivityValue, setSensitivityValue] = useState('10');
+  const [numberOfScenarios, setNumberOfScenarios] = useState('5');
+
+  const generateSensitivityScenarios = () => {
+    if (!basePrice || basePrice === 0) return;
+    
+    const value = parseFloat(sensitivityValue) || 10;
+    const count = parseInt(numberOfScenarios) || 5;
+    const newScenarios: ScenarioData[] = [];
+    
+    // Generate scenarios from negative to positive
+    const halfCount = Math.floor(count / 2);
+    for (let i = -halfCount; i <= halfCount; i++) {
+      if (i === 0 && count % 2 === 0) continue; // Skip zero for even numbers
+      
+      let adjustedPrice: number;
+      if (sensitivityType === 'percentage') {
+        const adjustment = (value * i) / 100;
+        adjustedPrice = basePrice * (1 + adjustment);
+      } else {
+        adjustedPrice = basePrice + (value * i);
+      }
+      
+      if (adjustedPrice > 0) {
+        const label = i === 0 ? 'Base Case' : 
+                    i < 0 ? `${Math.abs(i * (sensitivityType === 'percentage' ? value : value))}${sensitivityType === 'percentage' ? '%' : '$'} Lower` :
+                    `${i * (sensitivityType === 'percentage' ? value : value)}${sensitivityType === 'percentage' ? '%' : '$'} Higher`;
+        
+        // Calculate costs and metrics for this price
+        const baseSalesPrice = scenarios.find(s => s.label === 'Base Case')?.salesPrice || basePrice;
+        const baseTotalCosts = scenarios.find(s => s.label === 'Base Case')?.totalCosts || 0;
+        const baseSalesCosts = scenarios.find(s => s.label === 'Base Case')?.salesCosts || 0;
+        
+        // Proportionally adjust sales costs if they change with price
+        const salesCostRatio = baseSalesPrice > 0 ? baseSalesCosts / baseSalesPrice : 0;
+        const adjustedSalesCosts = adjustedPrice * salesCostRatio;
+        const adjustedTotalCosts = baseTotalCosts - baseSalesCosts + adjustedSalesCosts;
+        
+        const netProfit = adjustedPrice - adjustedTotalCosts;
+        const margin = adjustedPrice > 0 ? (netProfit / adjustedPrice) * 100 : 0;
+        const roi = adjustedTotalCosts > 0 ? (netProfit / adjustedTotalCosts) * 100 : 0;
+        const profitPerSqFt = netProfit / (scenarios[0]?.profitPerSqFt ? (scenarios[0].netProfit / scenarios[0].profitPerSqFt) || 1 : 1);
+        
+        newScenarios.push({
+          label,
+          salesPrice: adjustedPrice,
+          salesCosts: adjustedSalesCosts,
+          totalCosts: adjustedTotalCosts,
+          netProfit,
+          margin,
+          profitPerSqFt,
+          roi
+        });
+      }
+    }
+    
+    if (onGenerateSensitivity) {
+      onGenerateSensitivity(newScenarios);
+    }
+  };
   const getBadgeColor = (label: string) => {
     switch (label) {
       case 'Conservative':
@@ -40,49 +110,118 @@ export default function SensitivityTable({ scenarios }: SensitivityTableProps) {
   };
 
   return (
-    <div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Profitability Analysis</h3>
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Scenario</TableHead>
-              <TableHead>Sales Price</TableHead>
-              <TableHead>Sales Costs</TableHead>
-              <TableHead>Total Costs</TableHead>
-              <TableHead>Net Profit</TableHead>
-              <TableHead>Margin %</TableHead>
-              <TableHead>ROI %</TableHead>
-              <TableHead>$/SqFt</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {scenarios.map((scenario, index) => (
-              <TableRow key={index} className={scenario.label === 'Base Case' ? 'bg-blue-50' : ''}>
-                <TableCell>
-                  <Badge className={getBadgeColor(scenario.label)}>
-                    {scenario.label}
-                  </Badge>
-                </TableCell>
-                <TableCell className="font-medium">{formatCurrency(scenario.salesPrice)}</TableCell>
-                <TableCell>{formatCurrency(scenario.salesCosts)}</TableCell>
-                <TableCell>{formatCurrency(scenario.totalCosts)}</TableCell>
-                <TableCell className="font-medium">{formatCurrency(scenario.netProfit)}</TableCell>
-                <TableCell>
-                  <span className={`font-semibold ${getMarginColor(scenario.margin)}`}>
-                    {formatPercent(scenario.margin)}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <span className={`font-semibold ${getMarginColor(scenario.roi || 0)}`}>
-                    {formatPercent(scenario.roi || 0)}
-                  </span>
-                </TableCell>
-                <TableCell>{formatCurrency(scenario.profitPerSqFt)}</TableCell>
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Profitability Analysis</h3>
+        
+        {/* Enhanced Sensitivity Analysis Controls */}
+        {basePrice > 0 && onGenerateSensitivity && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Advanced Sensitivity Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div>
+                  <Label htmlFor="sensitivityType">Adjustment Type</Label>
+                  <Select value={sensitivityType} onValueChange={(value: 'percentage' | 'dollar') => setSensitivityType(value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percentage">Percentage (%)</SelectItem>
+                      <SelectItem value="dollar">Dollar Amount ($)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="sensitivityValue">
+                    {sensitivityType === 'percentage' ? 'Percentage Step' : 'Dollar Step'}
+                  </Label>
+                  <Input
+                    id="sensitivityValue"
+                    type="number"
+                    value={sensitivityValue}
+                    onChange={(e) => setSensitivityValue(e.target.value)}
+                    placeholder={sensitivityType === 'percentage' ? '10' : '50000'}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="numberOfScenarios">Number of Scenarios</Label>
+                  <Select value={numberOfScenarios} onValueChange={setNumberOfScenarios}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="3">3</SelectItem>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="7">7</SelectItem>
+                      <SelectItem value="9">9</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-end">
+                  <Button 
+                    onClick={generateSensitivityScenarios}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Generate Analysis
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Scenario</TableHead>
+                <TableHead>Sales Price</TableHead>
+                <TableHead className="text-red-600">Sales Costs</TableHead>
+                <TableHead className="text-red-600">Total Costs</TableHead>
+                <TableHead className="text-green-600">Net Profit</TableHead>
+                <TableHead className="text-green-600">Margin %</TableHead>
+                <TableHead className="text-green-600">ROI %</TableHead>
+                <TableHead className="text-green-600">$/SqFt</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {scenarios.map((scenario, index) => (
+                <TableRow key={index} className={scenario.label === 'Base Case' ? 'bg-blue-50' : ''}>
+                  <TableCell>
+                    <Badge className={getBadgeColor(scenario.label)}>
+                      {scenario.label}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-medium">{formatCurrency(scenario.salesPrice)}</TableCell>
+                  <TableCell className="text-red-600 font-medium">{formatCurrency(scenario.salesCosts)}</TableCell>
+                  <TableCell className="text-red-600 font-medium">{formatCurrency(scenario.totalCosts)}</TableCell>
+                  <TableCell className={`font-medium ${scenario.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {formatCurrency(scenario.netProfit)}
+                  </TableCell>
+                  <TableCell>
+                    <span className={`font-semibold ${scenario.margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formatPercent(scenario.margin)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className={`font-semibold ${(scenario.roi || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formatPercent(scenario.roi || 0)}
+                    </span>
+                  </TableCell>
+                  <TableCell className={`font-medium ${scenario.profitPerSqFt >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {formatCurrency(scenario.profitPerSqFt)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

@@ -308,10 +308,9 @@ export default function UnitCalculatorForm() {
             <Button
               onClick={handleSaveScenario}
               disabled={!selectedUnitTypeId || saveScenarioMutation.isPending}
-              className="mt-4 w-full"
-              variant="outline"
+              className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-medium"
             >
-              {saveScenarioMutation.isPending ? "Saving..." : "Save Configuration"}
+              {saveScenarioMutation.isPending ? "Saving Configuration..." : "Save Configuration"}
             </Button>
           </div>
 
@@ -370,10 +369,10 @@ export default function UnitCalculatorForm() {
 
             <Button
               onClick={calculateScenarios}
-              className="mt-6 w-full bg-primary hover:bg-primary/90"
+              className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
             >
               <Calculator className="mr-2 h-4 w-4" />
-              Calculate Scenarios
+              Calculate Profitability Scenarios
             </Button>
           </div>
         </div>
@@ -381,7 +380,11 @@ export default function UnitCalculatorForm() {
         {/* Sensitivity Analysis Results */}
         {calculatedScenarios.length > 0 && (
           <div className="mt-8">
-            <SensitivityTable scenarios={calculatedScenarios} />
+            <SensitivityTable 
+              scenarios={calculatedScenarios} 
+              basePrice={parseFloat(scenario1Price) || 0}
+              onGenerateSensitivity={setCalculatedScenarios}
+            />
             
             <div className="mt-4 p-4 bg-blue-50 rounded-lg">
               <div className="flex items-start">
@@ -395,13 +398,13 @@ export default function UnitCalculatorForm() {
 
             {/* Export Options */}
             <div className="mt-6 flex justify-end space-x-3">
-              <Button variant="outline">
+              <Button variant="outline" className="border-gray-300 hover:bg-gray-50 font-medium">
                 <FileText className="mr-2 h-4 w-4" />
-                Export PDF
+                Export to PDF
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" className="border-gray-300 hover:bg-gray-50 font-medium">
                 <FileSpreadsheet className="mr-2 h-4 w-4" />
-                Export Excel
+                Export to Excel
               </Button>
             </div>
           </div>

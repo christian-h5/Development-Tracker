@@ -24,6 +24,8 @@ export const unitTypes = pgTable("unit_types", {
   bedrooms: integer("bedrooms").notNull().default(1),
   lockOffFlexRooms: integer("lock_off_flex_rooms").notNull().default(0),
   totalUnitsInDevelopment: integer("total_units_in_development").notNull().default(0),
+  startDate: text("start_date"),
+  occupancyDate: text("occupancy_date"),
 });
 
 export const phaseUnits = pgTable("phase_units", {

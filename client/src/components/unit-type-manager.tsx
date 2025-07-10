@@ -118,7 +118,7 @@ export default function UnitTypeManager() {
                   {editingUnitType ? "Edit Unit Type" : "Add New Unit Type"}
                 </DialogTitle>
               </DialogHeader>
-              
+
               <div className="space-y-4 py-4">
                 <div>
                   <Label htmlFor="name">Unit Type Name</Label>
@@ -129,7 +129,7 @@ export default function UnitTypeManager() {
                     placeholder="e.g., Type A"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="squareFootage">Square Footage</Label>
                   <Input
@@ -140,7 +140,7 @@ export default function UnitTypeManager() {
                     placeholder="e.g., 1200"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="bedrooms">Number of Bedrooms</Label>
                   <Input
@@ -151,7 +151,7 @@ export default function UnitTypeManager() {
                     placeholder="e.g., 2"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="lockOffFlexRooms">Lock-Off Flex Rooms</Label>
                   <Input
@@ -162,7 +162,7 @@ export default function UnitTypeManager() {
                     placeholder="e.g., 1"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="totalUnitsInDevelopment">Total Units in Development</Label>
                   <Input
@@ -174,7 +174,7 @@ export default function UnitTypeManager() {
                   />
                 </div>
               </div>
-              
+
               <div className="flex justify-end space-x-2">
                 <Button variant="outline" onClick={handleCloseDialog}>
                   Cancel
@@ -193,7 +193,7 @@ export default function UnitTypeManager() {
           Manage unit types, their specifications, and total quantities in the development
         </p>
       </CardHeader>
-      
+
       <CardContent>
         <div className="overflow-x-auto">
           <Table>
@@ -239,7 +239,7 @@ export default function UnitTypeManager() {
             </div>
             <div className="text-2xl font-bold text-blue-900">{getTotalUnits()}</div>
           </div>
-          
+
           <div className="bg-green-50 rounded-lg p-4 text-center">
             <div className="flex items-center justify-center mb-2">
               <Bed className="text-green-600 h-5 w-5 mr-2" />
@@ -247,7 +247,7 @@ export default function UnitTypeManager() {
             </div>
             <div className="text-2xl font-bold text-green-900">{getTotalBedrooms()}</div>
           </div>
-          
+
           <div className="bg-purple-50 rounded-lg p-4 text-center">
             <div className="flex items-center justify-center mb-2">
               <FlipHorizontal className="text-purple-600 h-5 w-5 mr-2" />
@@ -255,7 +255,7 @@ export default function UnitTypeManager() {
             </div>
             <div className="text-2xl font-bold text-purple-900">{getTotalLockOffRooms()}</div>
           </div>
-          
+
           <div className="bg-orange-50 rounded-lg p-4 text-center">
             <div className="flex items-center justify-center mb-2">
               <Home className="text-orange-600 h-5 w-5 mr-2" />

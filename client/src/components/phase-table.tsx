@@ -106,7 +106,7 @@ export default function PhaseTable({ phases, onEditPhase, onViewPhase }: PhaseTa
               {phases.map((phase) => {
                 const metrics = calculatePhaseMetrics(phase);
                 const isProjected = phase.status !== 'completed';
-                
+
                 return (
                   <TableRow key={phase.id}>
                     <TableCell>
@@ -154,20 +154,22 @@ export default function PhaseTable({ phases, onEditPhase, onViewPhase }: PhaseTa
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onEditPhase(phase)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onViewPhase(phase)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                        <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => onViewPhase(phase)}
+                        className="hover:bg-blue-50 hover:text-blue-600"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => onEditPhase(phase)}
+                        className="hover:bg-gray-50 hover:text-gray-600"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
                       </div>
                     </TableCell>
                   </TableRow>
