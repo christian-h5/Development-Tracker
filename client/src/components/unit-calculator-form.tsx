@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calculator, FileText, FileSpreadsheet, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { calculateSalesCosts, calculateNetProfit, calculateMargin, calculateProfitPerSqFt, formatCurrency, formatPercent } from "@/lib/calculations";
+import { calculateSalesCosts, calculateNetProfit, calculateMargin, calculateProfitPerSqFt, calculateROI, formatCurrency, formatPercent } from "@/lib/calculations";
 import SensitivityTable from "@/components/sensitivity-table";
 import type { UnitType, CalculatorScenario } from "@shared/schema";
 
@@ -19,6 +19,7 @@ interface ScenarioData {
   netProfit: number;
   margin: number;
   profitPerSqFt: number;
+  roi: number;
 }
 
 export default function UnitCalculatorForm() {
@@ -58,7 +59,7 @@ export default function UnitCalculatorForm() {
   });
 
   // Load saved scenario data when unit type is selected
-  React.useEffect(() => {
+  useEffect(() => {
     if (savedScenario) {
       setHardCosts(savedScenario.hardCosts || "");
       setSoftCosts(savedScenario.softCosts || "");
@@ -72,7 +73,7 @@ export default function UnitCalculatorForm() {
   }, [savedScenario]);
 
   // Update square footage when unit type changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedUnitTypeId) {
       const unitType = unitTypes.find(ut => ut.id === selectedUnitTypeId);
       if (unitType) {
@@ -108,6 +109,7 @@ export default function UnitCalculatorForm() {
       const netProfit = scenario.price - totalCosts;
       const margin = calculateMargin(scenario.price, netProfit);
       const profitPerSqFt = calculateProfitPerSqFt(netProfit, sqFt);
+      const roi = calculateROI(netProfit, baseCosts);
 
       return {
         label: scenario.label,
@@ -117,6 +119,7 @@ export default function UnitCalculatorForm() {
         netProfit,
         margin,
         profitPerSqFt,
+        roi,
       };
     });
 

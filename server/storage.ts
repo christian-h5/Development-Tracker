@@ -21,6 +21,7 @@ export interface IStorage {
   // Unit Types
   getUnitTypes(): Promise<UnitType[]>;
   createUnitType(unitType: InsertUnitType): Promise<UnitType>;
+  updateUnitType(id: number, unitType: Partial<InsertUnitType>): Promise<UnitType>;
   
   // Phase Units
   createPhaseUnit(phaseUnit: InsertPhaseUnit): Promise<PhaseUnit>;
@@ -75,9 +76,30 @@ export class MemStorage implements IStorage {
     this.currentProjectId = 2;
 
     // Create default unit types
-    const unitTypeA: UnitType = { id: 1, name: "Type A", squareFootage: 1200 };
-    const unitTypeB: UnitType = { id: 2, name: "Type B", squareFootage: 1450 };
-    const unitTypeC: UnitType = { id: 3, name: "Type C", squareFootage: 1650 };
+    const unitTypeA: UnitType = { 
+      id: 1, 
+      name: "Type A", 
+      squareFootage: 1200, 
+      bedrooms: 2, 
+      lockOffFlexRooms: 1, 
+      totalUnitsInDevelopment: 120 
+    };
+    const unitTypeB: UnitType = { 
+      id: 2, 
+      name: "Type B", 
+      squareFootage: 1450, 
+      bedrooms: 3, 
+      lockOffFlexRooms: 1, 
+      totalUnitsInDevelopment: 80 
+    };
+    const unitTypeC: UnitType = { 
+      id: 3, 
+      name: "Type C", 
+      squareFootage: 1650, 
+      bedrooms: 3, 
+      lockOffFlexRooms: 2, 
+      totalUnitsInDevelopment: 60 
+    };
     
     this.unitTypes.set(1, unitTypeA);
     this.unitTypes.set(2, unitTypeB);
@@ -160,6 +182,15 @@ export class MemStorage implements IStorage {
     const unitType: UnitType = { ...insertUnitType, id: this.currentUnitTypeId++ };
     this.unitTypes.set(unitType.id, unitType);
     return unitType;
+  }
+
+  async updateUnitType(id: number, updateData: Partial<InsertUnitType>): Promise<UnitType> {
+    const existing = this.unitTypes.get(id);
+    if (!existing) throw new Error("Unit type not found");
+    
+    const updated = { ...existing, ...updateData };
+    this.unitTypes.set(id, updated);
+    return updated;
   }
 
   async createPhaseUnit(insertPhaseUnit: InsertPhaseUnit): Promise<PhaseUnit> {

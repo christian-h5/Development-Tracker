@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatCurrency, formatPercent } from "@/lib/calculations";
+import { formatCurrency, formatPercent, calculateROI } from "@/lib/calculations";
 
 interface ScenarioData {
   label: string;
@@ -10,6 +10,7 @@ interface ScenarioData {
   netProfit: number;
   margin: number;
   profitPerSqFt: number;
+  roi?: number;
 }
 
 interface SensitivityTableProps {
@@ -51,6 +52,7 @@ export default function SensitivityTable({ scenarios }: SensitivityTableProps) {
               <TableHead>Total Costs</TableHead>
               <TableHead>Net Profit</TableHead>
               <TableHead>Margin %</TableHead>
+              <TableHead>ROI %</TableHead>
               <TableHead>$/SqFt</TableHead>
             </TableRow>
           </TableHeader>
@@ -69,6 +71,11 @@ export default function SensitivityTable({ scenarios }: SensitivityTableProps) {
                 <TableCell>
                   <span className={`font-semibold ${getMarginColor(scenario.margin)}`}>
                     {formatPercent(scenario.margin)}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <span className={`font-semibold ${getMarginColor(scenario.roi || 0)}`}>
+                    {formatPercent(scenario.roi || 0)}
                   </span>
                 </TableCell>
                 <TableCell>{formatCurrency(scenario.profitPerSqFt)}</TableCell>

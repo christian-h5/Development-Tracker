@@ -120,6 +120,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/unit-types/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const data = insertUnitTypeSchema.partial().parse(req.body);
+      const unitType = await storage.updateUnitType(id, data);
+      res.json(unitType);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update unit type" });
+    }
+  });
+
   // Phase Unit routes
   app.post("/api/phase-units", async (req, res) => {
     try {

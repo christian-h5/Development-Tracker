@@ -21,6 +21,9 @@ export const unitTypes = pgTable("unit_types", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   squareFootage: integer("square_footage").notNull(),
+  bedrooms: integer("bedrooms").notNull().default(1),
+  lockOffFlexRooms: integer("lock_off_flex_rooms").notNull().default(0),
+  totalUnitsInDevelopment: integer("total_units_in_development").notNull().default(0),
 });
 
 export const phaseUnits = pgTable("phase_units", {
@@ -33,7 +36,14 @@ export const phaseUnits = pgTable("phase_units", {
   landCosts: decimal("land_costs", { precision: 12, scale: 2 }),
   salesPrice: decimal("sales_price", { precision: 12, scale: 2 }),
   contingencyCosts: decimal("contingency_costs", { precision: 12, scale: 2 }),
-  inputMethod: text("input_method").notNull().default("perUnit"), // 'perUnit' or 'perSqFt'
+  salesCosts: decimal("sales_costs", { precision: 12, scale: 2 }),
+  lawyerFees: decimal("lawyer_fees", { precision: 12, scale: 2 }),
+  hardCostsInputMethod: text("hard_costs_input_method").notNull().default("perUnit"),
+  softCostsInputMethod: text("soft_costs_input_method").notNull().default("perUnit"),
+  landCostsInputMethod: text("land_costs_input_method").notNull().default("perUnit"),
+  contingencyCostsInputMethod: text("contingency_costs_input_method").notNull().default("perUnit"),
+  salesCostsInputMethod: text("sales_costs_input_method").notNull().default("perUnit"),
+  lawyerFeesInputMethod: text("lawyer_fees_input_method").notNull().default("perUnit"),
 });
 
 export const calculatorScenarios = pgTable("calculator_scenarios", {
@@ -43,6 +53,14 @@ export const calculatorScenarios = pgTable("calculator_scenarios", {
   softCosts: decimal("soft_costs", { precision: 12, scale: 2 }).notNull(),
   landCosts: decimal("land_costs", { precision: 12, scale: 2 }).notNull(),
   contingencyCosts: decimal("contingency_costs", { precision: 12, scale: 2 }).notNull(),
+  salesCosts: decimal("sales_costs", { precision: 12, scale: 2 }).notNull(),
+  lawyerFees: decimal("lawyer_fees", { precision: 12, scale: 2 }).notNull(),
+  hardCostsInputMethod: text("hard_costs_input_method").notNull().default("perUnit"),
+  softCostsInputMethod: text("soft_costs_input_method").notNull().default("perUnit"),
+  landCostsInputMethod: text("land_costs_input_method").notNull().default("perUnit"),
+  contingencyCostsInputMethod: text("contingency_costs_input_method").notNull().default("perUnit"),
+  salesCostsInputMethod: text("sales_costs_input_method").notNull().default("perUnit"),
+  lawyerFeesInputMethod: text("lawyer_fees_input_method").notNull().default("perUnit"),
   scenario1Price: decimal("scenario1_price", { precision: 12, scale: 2 }),
   scenario2Price: decimal("scenario2_price", { precision: 12, scale: 2 }),
   scenario3Price: decimal("scenario3_price", { precision: 12, scale: 2 }),

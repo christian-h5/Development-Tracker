@@ -32,3 +32,8 @@ export function formatCurrency(amount: number): string {
 export function formatPercent(value: number): string {
   return `${value.toFixed(1)}%`;
 }
+
+export function calculateROI(netProfit: number, totalInvestment: number): number {
+  if (totalInvestment === 0) return 0;
+  return (netProfit / totalInvestment) * 100;
+}

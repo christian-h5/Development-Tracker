@@ -3,6 +3,7 @@ import { useState } from "react";
 import ProjectDashboard from "@/components/project-dashboard";
 import PhaseTable from "@/components/phase-table";
 import PhaseModal from "@/components/phase-modal";
+import UnitTypeManager from "@/components/unit-type-manager";
 import type { PhaseWithUnits } from "@shared/schema";
 
 export default function ProjectTracking() {
@@ -42,6 +43,11 @@ export default function ProjectTracking() {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <ProjectDashboard projectId={projectId} onAddPhase={handleAddPhase} />
+      
+      <div className="mb-8">
+        <UnitTypeManager />
+      </div>
+      
       <PhaseTable 
         phases={phases} 
         onEditPhase={handleEditPhase}
