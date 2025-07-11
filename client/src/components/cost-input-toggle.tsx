@@ -205,7 +205,7 @@ export default function CostInputToggle({
         <div className="flex-1 relative">
           <Input
             type="number"
-            value={parseFloat(value) === 0 ? "" : value}
+            value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={isSalesCosts ? "0 = auto-calc, or enter amount" : placeholder || "Enter amount"}
             disabled={disabled}

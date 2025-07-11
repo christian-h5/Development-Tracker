@@ -505,8 +505,8 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
 
                       <CostInputToggle
                         label="Sales Costs (Commission + Legal)"
-                        value={config.salesCosts.toString()}
-                        onChange={(value) => updateUnitConfig(index, 'salesCosts', parseFloat(value) || 0)}
+                        value={config.salesCosts === 0 ? "" : config.salesCosts.toString()}
+                        onChange={(value) => updateUnitConfig(index, 'salesCosts', value === "" ? 0 : parseFloat(value) || 0)}
                         inputMethod={config.salesCostsInputMethod}
                         onToggleMethod={(method) => updateUnitConfig(index, 'salesCostsInputMethod', method)}
                         placeholder="Enter amount"
