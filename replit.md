@@ -1,8 +1,8 @@
-# DevTracker Pro - Real Estate Development Project Management System
+# DevTracker Tool - Real Estate Development Project Management System
 
 ## Overview
 
-DevTracker Pro is a full-stack web application designed for real estate development project management. It provides tools for tracking development phases, managing unit types, calculating profitability scenarios, and monitoring project progress. The application features a modern React frontend with a Node.js/Express backend, using PostgreSQL for data persistence.
+DevTracker Tool is a full-stack web application designed for real estate development project management. It provides tools for tracking development phases, managing unit types, calculating profitability scenarios, and monitoring project progress. The application features a modern React frontend with a Node.js/Express backend, using PostgreSQL for data persistence.
 
 ## User Preferences
 
