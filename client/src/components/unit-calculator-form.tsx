@@ -193,49 +193,58 @@ export default function UnitCalculatorForm() {
   };
 
   const calculateScenarios = () => {
-    const sqFt = parseFloat(squareFootage) || 1;
-    const hardCost = convertCostPerMethod(parseFloat(hardCosts) || 0, hardCostsInputMethod, sqFt);
-    const softCost = convertCostPerMethod(parseFloat(softCosts) || 0, softCostsInputMethod, sqFt);
-    const landCost = convertCostPerMethod(parseFloat(landCosts) || 0, landCostsInputMethod, sqFt);
-    const contingencyCost = convertCostPerMethod(parseFloat(contingencyCosts) || 0, contingencyCostsInputMethod, sqFt);
-    const lawyerFee = convertCostPerMethod(parseFloat(lawyerFees) || 0, lawyerFeesInputMethod, sqFt);
-    const constructionCost = useConstructionFinancing ? convertCostPerMethod(parseFloat(constructionFinancing) || 0, constructionFinancingInputMethod, sqFt) : 0;
+    try {
+      const sqFt = parseFloat(squareFootage) || 1;
+      const hardCost = convertCostPerMethod(parseFloat(hardCosts) || 0, hardCostsInputMethod, sqFt);
+      const softCost = convertCostPerMethod(parseFloat(softCosts) || 0, softCostsInputMethod, sqFt);
+      const landCost = convertCostPerMethod(parseFloat(landCosts) || 0, landCostsInputMethod, sqFt);
+      const contingencyCost = convertCostPerMethod(parseFloat(contingencyCosts) || 0, contingencyCostsInputMethod, sqFt);
+      const lawyerFee = convertCostPerMethod(parseFloat(lawyerFees) || 0, lawyerFeesInputMethod, sqFt);
+      const constructionCost = useConstructionFinancing ? convertCostPerMethod(parseFloat(constructionFinancing) || 0, constructionFinancingInputMethod, sqFt) : 0;
 
-    const scenarios = [
-      { label: "Base Case", price: parseFloat(scenario1Price) || 0 },
-      ...additionalScenarios.map(scenario => ({
-        label: scenario.label,
-        price: parseFloat(scenario.price) || 0
-      }))
-    ].filter(s => s.price > 0)
-    .sort((a, b) => a.price - b.price); // Sort by price ascending
+      const scenarios = [
+        { label: "Base Case", price: parseFloat(scenario1Price) || 0 },
+        ...additionalScenarios.map(scenario => ({
+          label: scenario.label,
+          price: parseFloat(scenario.price) || 0
+        }))
+      ].filter(s => s.price > 0)
+      .sort((a, b) => a.price - b.price); // Sort by price ascending
 
-    const calculated = scenarios.map(scenario => {
-      // Use manual sales costs if provided, otherwise calculate tiered commission
-      let salesCost = convertCostPerMethod(parseFloat(salesCosts) || 0, salesCostsInputMethod, sqFt);
-      if (!salesCosts || parseFloat(salesCosts) === 0) {
-        salesCost = calculateSalesCosts(scenario.price);
-      }
+      const calculated = scenarios.map(scenario => {
+        // Use manual sales costs if provided, otherwise calculate tiered commission
+        let salesCost = convertCostPerMethod(parseFloat(salesCosts) || 0, salesCostsInputMethod, sqFt);
+        if (!salesCosts || parseFloat(salesCosts) === 0) {
+          salesCost = calculateSalesCosts(scenario.price);
+        }
 
-      const totalCosts = hardCost + softCost + landCost + contingencyCost + salesCost + lawyerFee + constructionCost;
-      const netProfit = scenario.price - totalCosts;
-      const margin = calculateMargin(netProfit, scenario.price);
-      const profitPerSqFt = calculateProfitPerSqFt(netProfit, sqFt);
-      const roi = calculateROI(netProfit, totalCosts);
+        const totalCosts = hardCost + softCost + landCost + contingencyCost + salesCost + lawyerFee + constructionCost;
+        const netProfit = scenario.price - totalCosts;
+        const margin = calculateMargin(netProfit, scenario.price);
+        const profitPerSqFt = calculateProfitPerSqFt(netProfit, sqFt);
+        const roi = calculateROI(netProfit, totalCosts);
 
-      return {
-        label: scenario.label,
-        salesPrice: scenario.price,
-        salesCosts: salesCost,
-        totalCosts,
-        netProfit,
-        margin,
-        profitPerSqFt,
-        roi,
-      };
-    });
+        return {
+          label: scenario.label,
+          salesPrice: scenario.price,
+          salesCosts: salesCost,
+          totalCosts,
+          netProfit,
+          margin,
+          profitPerSqFt,
+          roi,
+        };
+      });
 
-    setCalculatedScenarios(calculated);
+      setCalculatedScenarios(calculated);
+    } catch (error) {
+      console.error('Error calculating scenarios:', error);
+      toast({
+        title: "Calculation Error",
+        description: "There was an error calculating scenarios. Please check your inputs.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSaveScenario = async () => {
