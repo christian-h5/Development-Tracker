@@ -95,7 +95,7 @@ export default function PhaseTable({ phases, onEditPhase, onViewPhase, onDeleteP
         const perUnitSalesCosts = convertCostPerMethod(userSalesCosts, unit.salesCostsInputMethod || 'perUnit', unitType.squareFootage);
         totalUnitSalesCosts = perUnitSalesCosts * unit.quantity;
       } else if (totalUnitRevenue > 0) {
-        // User hasn't entered sales costs but has revenue - auto-calculate commission
+        // User hasn't entered sales costs but has revenue - auto-calculate commission using default rates
         for (let i = 0; i < unit.quantity; i++) {
           const unitPrice = individualPrices[i] || baseSalesPrice;
           if (unitPrice > 0) {

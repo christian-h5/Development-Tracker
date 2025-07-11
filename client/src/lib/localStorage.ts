@@ -371,20 +371,46 @@ class LocalStorageService {
         const quantity = unit.quantity || 0;
         totalUnits += quantity;
         
-        const unitCosts = (
-          (parseFloat(unit.hardCosts?.toString() || '0')) +
-          (parseFloat(unit.softCosts?.toString() || '0')) +
-          (parseFloat(unit.landCosts?.toString() || '0')) +
-          (parseFloat(unit.contingencyCosts?.toString() || '0')) +
-          (parseFloat(unit.salesCosts?.toString() || '0')) +
-          (parseFloat(unit.lawyerFees?.toString() || '0')) +
-          (parseFloat(unit.constructionFinancing?.toString() || '0'))
-        ) * quantity;
+        // Get unit type for square footage
+        const unitTypes = this.getUnitTypes();
+        const unitType = unitTypes.find(ut => ut.id === unit.unitTypeId);
+        const squareFootage = unitType?.squareFootage || 1;
         
-        const unitRevenue = (parseFloat(unit.salesPrice?.toString() || '0')) * quantity;
+        // Calculate per-unit costs using proper conversion methods
+        const perUnitHardCosts = this.convertCostPerMethod(parseFloat(unit.hardCosts?.toString() || '0'), unit.hardCostsInputMethod || 'perUnit', squareFootage);
+        const perUnitSoftCosts = this.convertCostPerMethod(parseFloat(unit.softCosts?.toString() || '0'), unit.softCostsInputMethod || 'perUnit', squareFootage);
+        const perUnitLandCosts = this.convertCostPerMethod(parseFloat(unit.landCosts?.toString() || '0'), unit.landCostsInputMethod || 'perUnit', squareFootage);
+        const perUnitContingencyCosts = this.convertCostPerMethod(parseFloat(unit.contingencyCosts?.toString() || '0'), unit.contingencyCostsInputMethod || 'perUnit', squareFootage);
+        const perUnitLawyerFees = this.convertCostPerMethod(parseFloat(unit.lawyerFees?.toString() || '0'), unit.lawyerFeesInputMethod || 'perUnit', squareFootage);
+        const perUnitConstructionFinancing = unit.useConstructionFinancing ? 
+          this.convertCostPerMethod(parseFloat(unit.constructionFinancing?.toString() || '0'), unit.constructionFinancingInputMethod || 'perUnit', squareFootage) : 0;
         
-        totalCosts += unitCosts;
-        totalRevenue += unitRevenue;
+        // Calculate revenue and sales costs from individual prices
+        const individualPrices = unit.individualPrices ? JSON.parse(unit.individualPrices) : [];
+        const baseSalesPrice = parseFloat(unit.salesPrice?.toString() || '0');
+        
+        let phaseRevenue = 0;
+        let phaseSalesCosts = 0;
+        
+        for (let i = 0; i < quantity; i++) {
+          const unitPrice = individualPrices[i] || baseSalesPrice;
+          phaseRevenue += unitPrice;
+          
+          // Calculate sales costs - use custom if entered, otherwise auto-calculate
+          const userSalesCosts = parseFloat(unit.salesCosts?.toString() || '0');
+          if (userSalesCosts > 0) {
+            const perUnitSalesCosts = this.convertCostPerMethod(userSalesCosts, unit.salesCostsInputMethod || 'perUnit', squareFootage);
+            phaseSalesCosts += perUnitSalesCosts;
+          } else if (unitPrice > 0) {
+            phaseSalesCosts += this.calculateSalesCosts(unitPrice);
+          }
+        }
+        
+        // Total costs for this unit = (per-unit costs * quantity) + total sales costs
+        const phaseCosts = (perUnitHardCosts + perUnitSoftCosts + perUnitLandCosts + perUnitContingencyCosts + perUnitLawyerFees + perUnitConstructionFinancing) * quantity + phaseSalesCosts;
+        
+        totalCosts += phaseCosts;
+        totalRevenue += phaseRevenue;
       });
     });
     
@@ -400,6 +426,24 @@ class LocalStorageService {
       totalCosts,
       totalRevenue
     };
+  }
+
+  // Helper method for cost conversion
+  private convertCostPerMethod(value: number, method: string, sqFt: number, baseValue?: number): number {
+    if (method === 'perSqFt') {
+      return value * sqFt;
+    } else if (method === 'percentage' && baseValue) {
+      return (value / 100) * baseValue;
+    }
+    return value;
+  }
+
+  // Helper method for sales cost calculation
+  private calculateSalesCosts(salesPrice: number): number {
+    if (salesPrice <= 0) return 0;
+    const firstTier = Math.min(salesPrice, 100000);
+    const secondTier = Math.max(salesPrice - 100000, 0);
+    return (firstTier * 0.05) + (secondTier * 0.03);
   }
 
   // Utility method to clear all data (for testing/reset)

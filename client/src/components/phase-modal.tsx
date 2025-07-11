@@ -219,10 +219,15 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
       // User has entered custom sales costs - use those
       averageSalesCosts = convertCostPerMethod(config.salesCosts, config.salesCostsInputMethod, unitType.squareFootage);
     } else if (averageSalesPrice > 0) {
-      // User hasn't entered sales costs but has sales price - auto-calculate commission based on individual prices
+      // User hasn't entered sales costs but has sales price - auto-calculate commission using custom rates
       const totalSalesCosts = individualPrices.reduce((sum, price) => {
         const unitPrice = price || 0;
-        return unitPrice > 0 ? sum + calculateSalesCosts(unitPrice) : sum;
+        if (unitPrice > 0) {
+          const first100k = Math.min(unitPrice, 100000);
+          const balance = Math.max(0, unitPrice - 100000);
+          return sum + (first100k * (tier1Rate / 100)) + (balance * (tier2Rate / 100));
+        }
+        return sum;
       }, 0);
       averageSalesCosts = totalSalesCosts / Math.max(config.quantity, 1);
     }
@@ -433,10 +438,10 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
                                   <Label className="text-xs w-12">Unit {i + 1}:</Label>
                                   <Input
                                     type="number"
-                                    value={config.individualPrices?.[i] || 0}
+                                    value={(config.individualPrices?.[i] || 0) === 0 ? "" : config.individualPrices?.[i]}
                                     onChange={(e) => updateIndividualPrice(index, i, parseFloat(e.target.value) || 0)}
                                     className="text-sm"
-                                    placeholder="Price"
+                                    placeholder="Enter price"
                                   />
                                 </div>
                               ))}
