@@ -140,6 +140,9 @@ async function handleDelete(segments: string[]): Promise<any> {
     case 'phases':
       return await clientStorage.deletePhase(resourceId);
 
+    case 'unit-types':
+      return await clientStorage.deleteUnitType(resourceId);
+
     case 'calculator-unit-types':
       return await clientStorage.deleteCalculatorUnitType(resourceId);
 

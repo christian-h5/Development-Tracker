@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Edit, Plus, Trash2 } from "lucide-react";
-import { formatCurrency, formatPercent, calculateSalesCosts, calculateNetProfit, calculateMargin } from "@/lib/calculations";
+import { formatCurrency, formatPercent, calculateSalesCosts, calculateNetProfit, calculateMargin, convertCostPerMethod } from "@/lib/calculations";
 import type { PhaseWithUnits } from "@shared/schema";
 
 interface PhaseTableProps {
@@ -69,13 +69,15 @@ export default function PhaseTable({ phases, onEditPhase, onViewPhase, onDeleteP
         individuals
       });
 
-      // Calculate costs PER UNIT then multiply by quantity
-      const perUnitHardCosts = parseFloat(unit.hardCosts || "0");
-      const perUnitSoftCosts = parseFloat(unit.softCosts || "0");
-      const perUnitLandCosts = parseFloat(unit.landCosts || "0");
-      const perUnitContingencyCosts = parseFloat(unit.contingencyCosts || "0");
-      const perUnitConstructionFinancing = parseFloat(unit.constructionFinancing || "0");
-      const perUnitLawyerFees = parseFloat(unit.lawyerFees || "0");
+      // Calculate costs PER UNIT using proper conversion methods
+      const unitType = unit.unitType;
+      const perUnitHardCosts = convertCostPerMethod(parseFloat(unit.hardCosts || "0"), unit.hardCostsInputMethod || 'perUnit', unitType.squareFootage);
+      const perUnitSoftCosts = convertCostPerMethod(parseFloat(unit.softCosts || "0"), unit.softCostsInputMethod || 'perUnit', unitType.squareFootage);
+      const perUnitLandCosts = convertCostPerMethod(parseFloat(unit.landCosts || "0"), unit.landCostsInputMethod || 'perUnit', unitType.squareFootage);
+      const perUnitContingencyCosts = convertCostPerMethod(parseFloat(unit.contingencyCosts || "0"), unit.contingencyCostsInputMethod || 'perUnit', unitType.squareFootage);
+      const perUnitConstructionFinancing = unit.useConstructionFinancing ? 
+        convertCostPerMethod(parseFloat(unit.constructionFinancing || "0"), unit.constructionFinancingInputMethod || 'perUnit', unitType.squareFootage) : 0;
+      const perUnitLawyerFees = convertCostPerMethod(parseFloat(unit.lawyerFees || "0"), unit.lawyerFeesInputMethod || 'perUnit', unitType.squareFootage);
       
       // Calculate per-unit sales costs based on individual prices or base price
       let totalUnitRevenue = 0;

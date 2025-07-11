@@ -214,6 +214,12 @@ class LocalStorageService {
     return unitTypes[index];
   }
 
+  deleteUnitType(id: number): void {
+    const unitTypes = this.getUnitTypes();
+    const filteredUnitTypes = unitTypes.filter(ut => ut.id !== id);
+    this.saveToStorage(STORAGE_KEYS.UNIT_TYPES, filteredUnitTypes);
+  }
+
   // Calculator Unit Types
   getCalculatorUnitTypes(): CalculatorUnitType[] {
     return this.getFromStorage<CalculatorUnitType[]>(STORAGE_KEYS.CALCULATOR_UNIT_TYPES, []);

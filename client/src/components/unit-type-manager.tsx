@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Edit, Home, Bed, FlipHorizontal } from "lucide-react";
+import { Plus, Edit, Home, Bed, FlipHorizontal, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { UnitType } from "@shared/schema";
@@ -42,6 +42,25 @@ export default function UnitTypeManager() {
       toast({ title: "Failed to save unit type", variant: "destructive" });
     },
   });
+
+  const deleteUnitTypeMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest("DELETE", `/api/unit-types/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/unit-types"] });
+      toast({ title: "Unit type deleted successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to delete unit type", variant: "destructive" });
+    },
+  });
+
+  const handleDeleteUnitType = (unitType: UnitType) => {
+    if (confirm(`Are you sure you want to delete "${unitType.name}"? This action cannot be undone.`)) {
+      deleteUnitTypeMutation.mutate(unitType.id);
+    }
+  };
 
   const handleOpenDialog = (unitType?: UnitType) => {
     if (unitType) {
@@ -216,13 +235,24 @@ export default function UnitTypeManager() {
                   <TableCell>{unitType.lockOffFlexRooms}</TableCell>
                   <TableCell>{unitType.totalUnitsInDevelopment}</TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleOpenDialog(unitType)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenDialog(unitType)}
+                        className="hover:bg-gray-50 hover:text-gray-600"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteUnitType(unitType)}
+                        className="hover:bg-red-50 hover:text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
