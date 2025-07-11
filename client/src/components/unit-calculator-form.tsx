@@ -512,7 +512,12 @@ export default function UnitCalculatorForm() {
                 landCosts: parseFloat(landCosts) || 0,
                 contingencyCosts: parseFloat(contingencyCosts) || 0,
                 constructionFinancing: parseFloat(constructionFinancing) || 0,
-                useConstructionFinancing: useConstructionFinancing
+                useConstructionFinancing: useConstructionFinancing,
+                hardCostsInputMethod: hardCostsInputMethod,
+                softCostsInputMethod: softCostsInputMethod,
+                landCostsInputMethod: landCostsInputMethod,
+                contingencyCostsInputMethod: contingencyCostsInputMethod,
+                constructionFinancingInputMethod: constructionFinancingInputMethod
               }}
             />
           </div>

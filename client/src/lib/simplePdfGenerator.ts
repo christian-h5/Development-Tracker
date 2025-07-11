@@ -1,3 +1,5 @@
+import { convertCostPerMethod } from './calculations';
+
 // Helper functions for formatting
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -30,6 +32,11 @@ interface CostBreakdown {
   contingencyCosts?: number;
   constructionFinancing?: number;
   useConstructionFinancing?: boolean;
+  hardCostsInputMethod?: 'perUnit' | 'perSqFt';
+  softCostsInputMethod?: 'perUnit' | 'perSqFt';
+  landCostsInputMethod?: 'perUnit' | 'perSqFt';
+  contingencyCostsInputMethod?: 'perUnit' | 'perSqFt' | 'percentage';
+  constructionFinancingInputMethod?: 'perUnit' | 'perSqFt';
 }
 
 interface PDFReportOptions {
@@ -263,12 +270,22 @@ export function generatePDFReport(options: PDFReportOptions): void {
             </thead>
             <tbody>
                 ${scenarios.map(scenario => {
-                    // Calculate per-unit costs from total costs and sales data
-                    const totalNonSalesCosts = scenario.totalCosts - scenario.salesCosts;
-                    const hardCosts = costBreakdown.hardCosts || (totalNonSalesCosts * 0.4);
-                    const softCosts = costBreakdown.softCosts || (totalNonSalesCosts * 0.25);
-                    const landCosts = costBreakdown.landCosts || (totalNonSalesCosts * 0.25);
-                    const financing = (costBreakdown.useConstructionFinancing && costBreakdown.constructionFinancing) || (totalNonSalesCosts * 0.1);
+                    // Convert costs to per-unit values using proper conversion methods
+                    const hardCosts = costBreakdown.hardCosts ? 
+                      convertCostPerMethod(costBreakdown.hardCosts, costBreakdown.hardCostsInputMethod || 'perUnit', squareFootage) : 
+                      0;
+                    const softCosts = costBreakdown.softCosts ? 
+                      convertCostPerMethod(costBreakdown.softCosts, costBreakdown.softCostsInputMethod || 'perUnit', squareFootage) : 
+                      0;
+                    const landCosts = costBreakdown.landCosts ? 
+                      convertCostPerMethod(costBreakdown.landCosts, costBreakdown.landCostsInputMethod || 'perUnit', squareFootage) : 
+                      0;
+                    const contingencyCosts = costBreakdown.contingencyCosts ? 
+                      convertCostPerMethod(costBreakdown.contingencyCosts, costBreakdown.contingencyCostsInputMethod || 'perUnit', squareFootage) : 
+                      0;
+                    const financing = (costBreakdown.useConstructionFinancing && costBreakdown.constructionFinancing) ? 
+                      convertCostPerMethod(costBreakdown.constructionFinancing, costBreakdown.constructionFinancingInputMethod || 'perUnit', squareFootage) : 
+                      0;
                     
                     return `
                     <tr style="${scenario.label === 'Base Case' ? 'background-color: #e3f2fd; font-weight: bold;' : ''}">

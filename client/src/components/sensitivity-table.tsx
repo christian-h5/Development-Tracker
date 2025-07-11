@@ -38,6 +38,11 @@ interface SensitivityTableProps {
     contingencyCosts?: number;
     constructionFinancing?: number;
     useConstructionFinancing?: boolean;
+    hardCostsInputMethod?: 'perUnit' | 'perSqFt';
+    softCostsInputMethod?: 'perUnit' | 'perSqFt';
+    landCostsInputMethod?: 'perUnit' | 'perSqFt';
+    contingencyCostsInputMethod?: 'perUnit' | 'perSqFt' | 'percentage';
+    constructionFinancingInputMethod?: 'perUnit' | 'perSqFt';
   };
 }
 
