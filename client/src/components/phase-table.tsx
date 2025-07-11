@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Edit, Eye, Plus, Trash2 } from "lucide-react";
+import { Edit, Plus, Trash2 } from "lucide-react";
 import { formatCurrency, formatPercent, calculateSalesCosts, calculateNetProfit, calculateMargin } from "@/lib/calculations";
 import type { PhaseWithUnits } from "@shared/schema";
 
@@ -46,32 +46,56 @@ export default function PhaseTable({ phases, onEditPhase, onViewPhase, onDeleteP
   const calculatePhaseMetrics = (phase: PhaseWithUnits) => {
     let totalCosts = 0;
     let totalRevenue = 0;
-    let unitTypes: { name: string; quantity: number }[] = [];
+    let unitTypes: { name: string; quantity: number; individuals: { unitName: string; salesPrice: number }[] }[] = [];
 
     phase.units.forEach(unit => {
+      // Calculate individual unit prices from individualPrices array or use base sales price
+      const individualPrices = unit.individualPrices ? JSON.parse(unit.individualPrices) : [];
+      const baseSalesPrice = parseFloat(unit.salesPrice || "0");
+      
+      // Create individual unit entries
+      const individuals: { unitName: string; salesPrice: number }[] = [];
+      for (let i = 0; i < unit.quantity; i++) {
+        const price = individualPrices[i] || baseSalesPrice;
+        individuals.push({
+          unitName: `Unit ${i + 1}`,
+          salesPrice: price
+        });
+      }
+
       unitTypes.push({
         name: unit.unitType.name,
-        quantity: unit.quantity
+        quantity: unit.quantity,
+        individuals
       });
 
-      if (unit.hardCosts && unit.softCosts && unit.landCosts && unit.contingencyCosts && unit.salesPrice) {
-        const hardCosts = parseFloat(unit.hardCosts);
-        const softCosts = parseFloat(unit.softCosts);
-        const landCosts = parseFloat(unit.landCosts);
-        const contingencyCosts = parseFloat(unit.contingencyCosts);
-        const salesPrice = parseFloat(unit.salesPrice);
-
-        const salesCosts = calculateSalesCosts(salesPrice);
-        const unitTotalCosts = (hardCosts + softCosts + landCosts + contingencyCosts + salesCosts) * unit.quantity;
-        const unitRevenue = salesPrice * unit.quantity;
-
-        totalCosts += unitTotalCosts;
-        totalRevenue += unitRevenue;
+      // Calculate costs PER UNIT then multiply by quantity
+      const perUnitHardCosts = parseFloat(unit.hardCosts || "0");
+      const perUnitSoftCosts = parseFloat(unit.softCosts || "0");
+      const perUnitLandCosts = parseFloat(unit.landCosts || "0");
+      const perUnitContingencyCosts = parseFloat(unit.contingencyCosts || "0");
+      const perUnitConstructionFinancing = parseFloat(unit.constructionFinancing || "0");
+      const perUnitLawyerFees = parseFloat(unit.lawyerFees || "0");
+      
+      // Calculate per-unit sales costs based on individual prices or base price
+      let totalUnitRevenue = 0;
+      let totalUnitSalesCosts = 0;
+      
+      for (let i = 0; i < unit.quantity; i++) {
+        const unitPrice = individualPrices[i] || baseSalesPrice;
+        totalUnitRevenue += unitPrice;
+        totalUnitSalesCosts += calculateSalesCosts(unitPrice);
       }
+
+      // Total phase costs = per-unit costs * quantity + individual sales costs
+      const phaseCosts = (perUnitHardCosts + perUnitSoftCosts + perUnitLandCosts + perUnitContingencyCosts + perUnitConstructionFinancing + perUnitLawyerFees) * unit.quantity + totalUnitSalesCosts;
+
+      totalCosts += phaseCosts;
+      totalRevenue += totalUnitRevenue;
     });
 
     const netProfit = totalRevenue - totalCosts;
-    const margin = calculateMargin(totalRevenue, netProfit);
+    const margin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
     const roi = totalCosts > 0 ? (netProfit / totalCosts) * 100 : 0;
 
     return {
@@ -131,11 +155,21 @@ export default function PhaseTable({ phases, onEditPhase, onViewPhase, onDeleteP
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-wrap gap-1">
+                      <div className="space-y-2">
                         {metrics.unitTypes.map((unitType, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {unitType.name} ({unitType.quantity})
-                          </Badge>
+                          <div key={index} className="space-y-1">
+                            <Badge variant="outline" className="text-xs">
+                              {unitType.name} ({unitType.quantity} units)
+                            </Badge>
+                            <div className="text-xs text-gray-600 ml-2">
+                              {unitType.individuals.map((individual, idx) => (
+                                <div key={idx} className="flex justify-between">
+                                  <span>{unitType.name}: {individual.unitName}</span>
+                                  <span className="font-medium">{formatCurrency(individual.salesPrice)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </TableCell>
@@ -168,29 +202,21 @@ export default function PhaseTable({ phases, onEditPhase, onViewPhase, onDeleteP
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => onViewPhase(phase)}
-                        className="hover:bg-blue-50 hover:text-blue-600"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => onEditPhase(phase)}
-                        className="hover:bg-gray-50 hover:text-gray-600"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => onDeletePhase(phase)}
-                        className="hover:bg-red-50 hover:text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => onEditPhase(phase)}
+                          className="hover:bg-gray-50 hover:text-gray-600"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => onDeletePhase(phase)}
+                          className="hover:bg-red-50 hover:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>

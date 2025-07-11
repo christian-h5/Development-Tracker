@@ -191,33 +191,51 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
 
   const calculateUnitMetrics = (config: UnitConfig) => {
     const unitType = getUnitType(config.unitTypeId);
-    if (!unitType) return { salesCosts: 0, totalCosts: 0, netProfit: 0, margin: 0 };
+    if (!unitType) return { salesCosts: 0, totalCosts: 0, netProfit: 0, margin: 0, perUnitCosts: 0, totalRevenue: 0 };
 
-    const hardCosts = convertCostPerMethod(config.hardCosts, config.hardCostsInputMethod, unitType.squareFootage);
-    const softCosts = convertCostPerMethod(config.softCosts, config.softCostsInputMethod, unitType.squareFootage);
-    const landCosts = convertCostPerMethod(config.landCosts, config.landCostsInputMethod, unitType.squareFootage);
-    const contingencyCosts = convertCostPerMethod(config.contingencyCosts, config.contingencyCostsInputMethod, unitType.squareFootage);
-    const lawyerFees = convertCostPerMethod(config.lawyerFees, config.lawyerFeesInputMethod, unitType.squareFootage);
+    // These are PER UNIT costs - no multiplication by quantity yet
+    const perUnitHardCosts = convertCostPerMethod(config.hardCosts, config.hardCostsInputMethod, unitType.squareFootage);
+    const perUnitSoftCosts = convertCostPerMethod(config.softCosts, config.softCostsInputMethod, unitType.squareFootage);
+    const perUnitLandCosts = convertCostPerMethod(config.landCosts, config.landCostsInputMethod, unitType.squareFootage);
+    const perUnitContingencyCosts = convertCostPerMethod(config.contingencyCosts, config.contingencyCostsInputMethod, unitType.squareFootage);
+    const perUnitLawyerFees = convertCostPerMethod(config.lawyerFees, config.lawyerFeesInputMethod, unitType.squareFootage);
 
-    // Add construction financing if enabled
-    let constructionFinancing = 0;
+    // Add construction financing if enabled (per unit)
+    let perUnitConstructionFinancing = 0;
     if (config.useConstructionFinancing) {
-      constructionFinancing = convertCostPerMethod(config.constructionFinancing, config.constructionFinancingInputMethod, unitType.squareFootage);
+      perUnitConstructionFinancing = convertCostPerMethod(config.constructionFinancing, config.constructionFinancingInputMethod, unitType.squareFootage);
     }
 
-    // Use manual sales costs if provided, otherwise calculate tiered commission
-    let salesCosts = convertCostPerMethod(config.salesCosts, config.salesCostsInputMethod, unitType.squareFootage);
-    if (config.salesCosts === 0 && config.salesPrice > 0) {
-      const first100k = Math.min(config.salesPrice, 100000);
-      const balance = Math.max(0, config.salesPrice - 100000);
-      salesCosts = (first100k * 0.05) + (balance * 0.03);
-    }
+    // Calculate average sales price and sales costs from individual prices
+    const individualPrices = config.individualPrices || Array(config.quantity).fill(config.salesPrice);
+    const totalRevenue = individualPrices.reduce((sum, price) => sum + (price || 0), 0);
+    const averageSalesPrice = totalRevenue / Math.max(config.quantity, 1);
+    
+    // Calculate average sales costs per unit based on individual prices
+    const totalSalesCosts = individualPrices.reduce((sum, price) => {
+      const unitPrice = price || 0;
+      return sum + calculateSalesCosts(unitPrice);
+    }, 0);
+    const averageSalesCosts = totalSalesCosts / Math.max(config.quantity, 1);
 
-    const totalCosts = hardCosts + softCosts + landCosts + contingencyCosts + salesCosts + lawyerFees + constructionFinancing;
-    const netProfit = config.salesPrice - totalCosts;
-    const margin = calculateMargin(config.salesPrice, netProfit);
+    // PER UNIT totals (what's displayed in Cost Summary Per Unit)
+    const perUnitCosts = perUnitHardCosts + perUnitSoftCosts + perUnitLandCosts + perUnitContingencyCosts + averageSalesCosts + perUnitLawyerFees + perUnitConstructionFinancing;
+    const perUnitNetProfit = averageSalesPrice - perUnitCosts;
+    const perUnitMargin = averageSalesPrice > 0 ? (perUnitNetProfit / averageSalesPrice) * 100 : 0;
 
-    return { salesCosts, totalCosts, netProfit, margin };
+    // TOTAL PHASE costs (per unit costs × quantity)
+    const totalCosts = perUnitCosts * config.quantity;
+    const netProfit = totalRevenue - totalCosts;
+    const margin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
+
+    return { 
+      salesCosts: averageSalesCosts, 
+      totalCosts: perUnitCosts, // This represents per-unit total for display 
+      netProfit: perUnitNetProfit, // Per-unit net profit for display
+      margin: perUnitMargin, // Per-unit margin for display
+      perUnitCosts, 
+      totalRevenue: averageSalesPrice // Average sales price for display
+    };
   };
 
   const handleSave = async () => {
@@ -504,7 +522,7 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
                         </div>
                         <div className="flex justify-between">
                           <span>Sales Price:</span>
-                          <span className="font-medium">{formatCurrency(config.salesPrice)}</span>
+                          <span className="font-medium">{formatCurrency(metrics.totalRevenue)}</span>
                         </div>
                         <div className="flex justify-between border-t border-gray-300 pt-1">
                           <span className="font-medium">Net Profit:</span>
