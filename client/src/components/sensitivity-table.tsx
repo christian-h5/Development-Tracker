@@ -218,14 +218,21 @@ export default function SensitivityTable({
             <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
               <h4 className="font-semibold text-gray-800">Analysis Results</h4>
               <Button
-                onClick={() => exportSensitivityAnalysisToPDF({
-                  projectName,
-                  unitTypeName,
-                  squareFootage,
-                  scenarios,
-                  analysisDate: new Date(),
-                  costBreakdown
-                })}
+                onClick={() => {
+                  try {
+                    exportSensitivityAnalysisToPDF({
+                      projectName,
+                      unitTypeName,
+                      squareFootage,
+                      scenarios,
+                      analysisDate: new Date(),
+                      costBreakdown
+                    });
+                  } catch (error) {
+                    console.error('PDF Export Error:', error);
+                    alert('Error generating PDF. Please check the console for details.');
+                  }
+                }}
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-2"

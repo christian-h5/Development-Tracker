@@ -149,59 +149,55 @@ export default function CostInputToggle({
         </div>
       )}
 
-      <div className="flex items-center space-x-3">
-        <div className="flex rounded-lg bg-gray-100 p-1 shadow-sm">
+      <div className="flex items-center gap-2">
+        <div className="flex rounded bg-gray-100 p-0.5 text-xs">
           <Button
             type="button"
             size="sm"
             className={`
-              relative rounded-md px-4 py-2 text-sm font-medium transition-all duration-200
+              rounded px-2 py-1 text-xs font-medium transition-all
               ${inputMethod === 'perUnit' 
-                ? 'bg-white text-blue-700 shadow-sm ring-1 ring-blue-200' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                ? 'bg-white text-blue-700 shadow-sm' 
+                : 'text-gray-600 hover:text-gray-900'
               }
             `}
             onClick={() => onToggleMethod('perUnit')}
             disabled={disabled}
           >
-            <Home className="w-4 h-4 mr-2" />
-            Per Unit
-
+            <Home className="w-3 h-3 mr-1" />
+            Unit
           </Button>
           <Button
             type="button"
             size="sm"
             className={`
-              relative rounded-md px-4 py-2 text-sm font-medium transition-all duration-200
+              rounded px-2 py-1 text-xs font-medium transition-all
               ${inputMethod === 'perSqFt' 
-                ? 'bg-white text-blue-700 shadow-sm ring-1 ring-blue-200' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                ? 'bg-white text-blue-700 shadow-sm' 
+                : 'text-gray-600 hover:text-gray-900'
               }
             `}
             onClick={() => onToggleMethod('perSqFt')}
             disabled={disabled}
           >
-            <Calculator className="w-4 h-4 mr-2" />
-            Per Sq Ft
-
+            <Calculator className="w-3 h-3 mr-1" />
+            SqFt
           </Button>
           {isContingency && (
             <Button
               type="button"
               size="sm"
               className={`
-                relative rounded-md px-4 py-2 text-sm font-medium transition-all duration-200
+                rounded px-2 py-1 text-xs font-medium transition-all
                 ${inputMethod === 'percentage' 
-                  ? 'bg-white text-blue-700 shadow-sm ring-1 ring-blue-200' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-white text-blue-700 shadow-sm' 
+                  : 'text-gray-600 hover:text-gray-900'
                 }
               `}
               onClick={() => onToggleMethod('percentage')}
               disabled={disabled}
             >
-              <span className="text-base font-bold">%</span>
-              <span className="ml-1">Percent</span>
-
+              <span className="text-xs font-bold">%</span>
             </Button>
           )}
         </div>
@@ -213,10 +209,10 @@ export default function CostInputToggle({
             onChange={(e) => onChange(e.target.value)}
             placeholder={isSalesCosts ? "Override auto-calculation" : placeholder}
             disabled={disabled}
-            className="pr-16 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+            className="pr-12 text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded"
           />
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500 font-medium">
-            {inputMethod === 'perUnit' ? '/ unit' : inputMethod === 'perSqFt' ? '/ sq ft' : '%'}
+          <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 font-medium">
+            {inputMethod === 'perUnit' ? '/unit' : inputMethod === 'perSqFt' ? '/sqft' : '%'}
           </div>
         </div>
       </div>
