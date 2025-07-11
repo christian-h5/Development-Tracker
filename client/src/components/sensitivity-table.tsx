@@ -112,16 +112,16 @@ export default function SensitivityTable({ scenarios, basePrice = 0, onGenerateS
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Profitability Analysis</h3>
+        <h3 className="text-xl font-bold text-gray-900 mb-6">Profitability Analysis</h3>
 
         {/* Enhanced Sensitivity Analysis Controls */}
         {basePrice > 0 && onGenerateSensitivity && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
+          <Card className="mb-8 border-gray-200 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg flex items-center gap-2 text-gray-800">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
                 Advanced Sensitivity Analysis
               </CardTitle>
             </CardHeader>
@@ -178,45 +178,45 @@ export default function SensitivityTable({ scenarios, basePrice = 0, onGenerateS
           </Card>
         )}
 
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <Table>
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+          <Table className="text-sm">
             <TableHeader>
-              <TableRow>
-                <TableHead>Scenario</TableHead>
-                <TableHead>Sales Price</TableHead>
-                <TableHead className="text-red-600">Sales Costs</TableHead>
-                <TableHead className="text-red-600">Total Costs</TableHead>
-                <TableHead className="text-green-600">Net Profit</TableHead>
-                <TableHead className="text-green-600">Margin %</TableHead>
-                <TableHead className="text-green-600">ROI %</TableHead>
-                <TableHead className="text-green-600">$/SqFt</TableHead>
+              <TableRow className="bg-gray-50">
+                <TableHead className="py-4 px-6 font-semibold text-gray-700">Scenario</TableHead>
+                <TableHead className="py-4 px-6 font-semibold text-gray-700">Sales Price</TableHead>
+                <TableHead className="py-4 px-6 font-semibold text-red-600">Sales Costs</TableHead>
+                <TableHead className="py-4 px-6 font-semibold text-red-600">Total Costs</TableHead>
+                <TableHead className="py-4 px-6 font-semibold text-green-600">Net Profit</TableHead>
+                <TableHead className="py-4 px-6 font-semibold text-green-600">Margin %</TableHead>
+                <TableHead className="py-4 px-6 font-semibold text-green-600">ROI %</TableHead>
+                <TableHead className="py-4 px-6 font-semibold text-green-600">$/SqFt</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {scenarios.map((scenario, index) => (
-                <TableRow key={index} className={scenario.label === 'Base Case' ? 'bg-blue-50' : ''}>
-                  <TableCell>
-                    <Badge className={getBadgeColor(scenario.label)}>
+                <TableRow key={index} className={`hover:bg-gray-50 transition-colors ${scenario.label === 'Base Case' ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}>
+                  <TableCell className="py-4 px-6">
+                    <Badge className={`px-3 py-1 font-medium ${getBadgeColor(scenario.label)}`}>
                       {scenario.label}
                     </Badge>
                   </TableCell>
-                  <TableCell className="font-medium">{formatCurrency(scenario.salesPrice)}</TableCell>
-                  <TableCell className="text-red-600 font-medium">{formatCurrency(scenario.salesCosts)}</TableCell>
-                  <TableCell className="text-red-600 font-medium">{formatCurrency(scenario.totalCosts)}</TableCell>
-                  <TableCell className={`font-medium ${scenario.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <TableCell className="py-4 px-6 font-semibold text-gray-900">{formatCurrency(scenario.salesPrice)}</TableCell>
+                  <TableCell className="py-4 px-6 text-red-600 font-semibold">{formatCurrency(scenario.salesCosts)}</TableCell>
+                  <TableCell className="py-4 px-6 text-red-600 font-semibold">{formatCurrency(scenario.totalCosts)}</TableCell>
+                  <TableCell className={`py-4 px-6 font-bold text-lg ${scenario.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {formatCurrency(scenario.netProfit)}
                   </TableCell>
-                  <TableCell>
-                    <span className={`font-semibold ${scenario.margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <TableCell className="py-4 px-6">
+                    <span className={`font-bold text-lg ${scenario.margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {formatPercent(scenario.margin)}
                     </span>
                   </TableCell>
-                  <TableCell>
-                    <span className={`font-semibold ${(scenario.roi || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <TableCell className="py-4 px-6">
+                    <span className={`font-bold text-lg ${(scenario.roi || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {formatPercent(scenario.roi || 0)}
                     </span>
                   </TableCell>
-                  <TableCell className={`font-medium ${scenario.profitPerSqFt >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <TableCell className={`py-4 px-6 font-semibold ${scenario.profitPerSqFt >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {formatCurrency(scenario.profitPerSqFt)}
                   </TableCell>
                 </TableRow>

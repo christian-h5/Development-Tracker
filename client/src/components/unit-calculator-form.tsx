@@ -248,7 +248,7 @@ export default function UnitCalculatorForm() {
       </CardHeader>
 
       <CardContent className="p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
           {/* Unit Configuration & Cost Input */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Unit Configuration</h3>
@@ -441,13 +441,15 @@ export default function UnitCalculatorForm() {
               Calculate Scenarios
             </Button>
 
-            {calculatedScenarios.length > 0 && (
-              <div className="mt-6">
-                <SensitivityTable scenarios={calculatedScenarios} />
-              </div>
-            )}
           </div>
         </div>
+
+        {/* Full-width results section */}
+        {calculatedScenarios.length > 0 && (
+          <div className="mt-10 border-t pt-8">
+            <SensitivityTable scenarios={calculatedScenarios} />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

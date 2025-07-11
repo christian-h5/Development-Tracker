@@ -18,7 +18,6 @@ export default function CalculatorUnitTypeManager() {
     name: "",
     squareFootage: "",
     bedrooms: "",
-    lockOffFlexRooms: "",
     description: ""
   });
 
@@ -83,7 +82,6 @@ export default function CalculatorUnitTypeManager() {
         name: unitType.name,
         squareFootage: unitType.squareFootage.toString(),
         bedrooms: unitType.bedrooms.toString(),
-        lockOffFlexRooms: unitType.lockOffFlexRooms.toString(),
         description: unitType.description || ""
       });
     } else {
@@ -106,7 +104,6 @@ export default function CalculatorUnitTypeManager() {
       name: "",
       squareFootage: "",
       bedrooms: "",
-      lockOffFlexRooms: "",
       description: ""
     });
   };
@@ -118,7 +115,7 @@ export default function CalculatorUnitTypeManager() {
       name: formData.name,
       squareFootage: parseInt(formData.squareFootage),
       bedrooms: parseInt(formData.bedrooms) || 1,
-      lockOffFlexRooms: parseInt(formData.lockOffFlexRooms) || 0,
+      lockOffFlexRooms: 0, // Always set to 0 for calculator unit types
       description: formData.description || undefined
     };
 
@@ -190,16 +187,7 @@ export default function CalculatorUnitTypeManager() {
                     placeholder="e.g., 1"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="lockOffFlexRooms">Lock-off/Flex Rooms</Label>
-                  <Input
-                    id="lockOffFlexRooms"
-                    type="number"
-                    value={formData.lockOffFlexRooms}
-                    onChange={(e) => setFormData({ ...formData, lockOffFlexRooms: e.target.value })}
-                    placeholder="e.g., 0"
-                  />
-                </div>
+
                 <div>
                   <Label htmlFor="description">Description (Optional)</Label>
                   <Input
@@ -241,7 +229,7 @@ export default function CalculatorUnitTypeManager() {
                 <TableHead>Name</TableHead>
                 <TableHead>Square Footage</TableHead>
                 <TableHead>Bedrooms</TableHead>
-                <TableHead>Flex Rooms</TableHead>
+
                 <TableHead>Description</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -252,7 +240,6 @@ export default function CalculatorUnitTypeManager() {
                   <TableCell className="font-medium">{unitType.name}</TableCell>
                   <TableCell>{unitType.squareFootage.toLocaleString()} sq ft</TableCell>
                   <TableCell>{unitType.bedrooms}</TableCell>
-                  <TableCell>{unitType.lockOffFlexRooms}</TableCell>
                   <TableCell className="max-w-xs truncate">
                     {unitType.description || "-"}
                   </TableCell>
