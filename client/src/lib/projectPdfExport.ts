@@ -210,10 +210,10 @@ export function exportProjectToPDF(options: ProjectPDFExportOptions): void {
         0: { fontStyle: 'bold' },
         1: { halign: 'center' },
         2: { halign: 'right' },
-        3: { halign: 'right', textColor: [231, 76, 60] },
-        4: { halign: 'right', textColor: [46, 125, 50] },
-        5: { halign: 'right', textColor: [46, 125, 50] },
-        6: { halign: 'right', textColor: [46, 125, 50] }
+        3: { halign: 'right' }, // Keep costs black
+        4: { halign: 'right' }, // Keep costs black
+        5: { halign: 'right' }, // Profit - will be colored based on value
+        6: { halign: 'right' }  // Margin - will be colored based on value
       },
       didParseCell: function(data) {
         // Color coding based on status
@@ -223,6 +223,16 @@ export function exportProjectToPDF(options: ProjectPDFExportOptions): void {
             data.cell.styles.fillColor = [200, 230, 201];
           } else if (status === 'in progress') {
             data.cell.styles.fillColor = [255, 243, 224];
+          }
+        }
+        
+        // Color profits based on positive/negative values (columns 5 and 6: Net Profit and Margin)
+        if (data.column.index >= 5) {
+          const cellText = data.cell.text[0];
+          if (cellText && cellText.includes('-')) {
+            data.cell.styles.textColor = [231, 76, 60]; // Red for negative
+          } else if (cellText && (cellText.includes('$') || cellText.includes('%'))) {
+            data.cell.styles.textColor = [46, 125, 50]; // Green for positive
           }
         }
       }
@@ -290,10 +300,21 @@ export function exportProjectToPDF(options: ProjectPDFExportOptions): void {
         columnStyles: {
           0: { fontStyle: 'bold' },
           1: { halign: 'center' },
-          2: { halign: 'right', textColor: [231, 76, 60] },
-          3: { halign: 'right', textColor: [231, 76, 60] },
+          2: { halign: 'right' }, // Keep costs black
+          3: { halign: 'right' }, // Keep costs black
           4: { halign: 'right' },
-          5: { halign: 'right', textColor: [46, 125, 50] }
+          5: { halign: 'right' }  // Profit - will be colored based on value
+        },
+        didParseCell: function(data) {
+          // Color profits based on positive/negative values (column 5: Net Profit)
+          if (data.column.index === 5) {
+            const cellText = data.cell.text[0];
+            if (cellText && cellText.includes('-')) {
+              data.cell.styles.textColor = [231, 76, 60]; // Red for negative
+            } else if (cellText && cellText.includes('$')) {
+              data.cell.styles.textColor = [46, 125, 50]; // Green for positive
+            }
+          }
         }
       });
       
@@ -324,10 +345,12 @@ export function exportProjectToPDF(options: ProjectPDFExportOptions): void {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     
+    const netProfit = summary.totalRevenue - summary.totalCosts;
+    
     const analysisLines = [
       `Total Development Cost: ${formatCurrency(summary.totalCosts)}`,
       `Expected Revenue: ${formatCurrency(summary.totalRevenue)}`,
-      `Net Profit: ${formatCurrency(summary.totalRevenue - summary.totalCosts)}`,
+      `Net Profit: ${formatCurrency(netProfit)}`,
       `Project Margin: ${formatPercent(summary.overallMargin)}`,
       `Return on Investment: ${formatPercent(summary.overallROI)}`,
       `Cost per Unit: ${summary.totalUnits > 0 ? formatCurrency(summary.totalCosts / summary.totalUnits) : 'N/A'}`,
@@ -340,6 +363,57 @@ export function exportProjectToPDF(options: ProjectPDFExportOptions): void {
         currentY += 6;
       }
     });
+    
+    // Total Cost Breakdown
+    currentY += 10;
+    if (currentY < pageHeight - 60) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Total Cost Breakdown', margin, currentY);
+      currentY += 8;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      
+      // Calculate total costs by category across all phases
+      let totalHardCosts = 0;
+      let totalSoftCosts = 0;
+      let totalLandCosts = 0;
+      let totalContingencyCosts = 0;
+      let totalSalesCosts = 0;
+      let totalLawyerFees = 0;
+      let totalConstructionFinancing = 0;
+      
+      phases.forEach(phase => {
+        phase.units.forEach(unit => {
+          const quantity = unit.quantity || 0;
+          totalHardCosts += (parseFloat(unit.hardCosts?.toString() || '0')) * quantity;
+          totalSoftCosts += (parseFloat(unit.softCosts?.toString() || '0')) * quantity;
+          totalLandCosts += (parseFloat(unit.landCosts?.toString() || '0')) * quantity;
+          totalContingencyCosts += (parseFloat(unit.contingencyCosts?.toString() || '0')) * quantity;
+          totalSalesCosts += (parseFloat(unit.salesCosts?.toString() || '0')) * quantity;
+          totalLawyerFees += (parseFloat(unit.lawyerFees?.toString() || '0')) * quantity;
+          totalConstructionFinancing += (parseFloat(unit.constructionFinancing?.toString() || '0')) * quantity;
+        });
+      });
+      
+      const breakdownLines = [
+        `Hard Costs: ${formatCurrency(totalHardCosts)}`,
+        `Soft Costs: ${formatCurrency(totalSoftCosts)}`,
+        `Land Costs: ${formatCurrency(totalLandCosts)}`,
+        `Contingency Costs: ${formatCurrency(totalContingencyCosts)}`,
+        `Sales Costs: ${formatCurrency(totalSalesCosts)}`,
+        `Lawyer Fees: ${formatCurrency(totalLawyerFees)}`,
+        `Construction Financing: ${formatCurrency(totalConstructionFinancing)}`,
+        `Total: ${formatCurrency(summary.totalCosts)}`
+      ];
+      
+      breakdownLines.forEach(line => {
+        if (currentY < pageHeight - 25) {
+          doc.text(line, margin, currentY);
+          currentY += 5;
+        }
+      });
+    }
   }
   
   // Save the PDF

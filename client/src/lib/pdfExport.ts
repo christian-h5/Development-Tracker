@@ -103,6 +103,28 @@ export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void 
     });
     
     currentY += 15;
+
+    // Cost Breakdown Section
+    doc.setFont('helvetica', 'bold');
+    doc.text('Cost Breakdown (Base Case)', margin, currentY);
+    currentY += 10;
+    
+    doc.setFont('helvetica', 'normal');
+    const costLines = [
+      `Sales Price: ${formatCurrency(baseCase.salesPrice)}`,
+      `Sales Costs: ${formatCurrency(baseCase.salesCosts)}`,
+      `Total Development Costs: ${formatCurrency(baseCase.totalCosts)}`,
+      `Net Profit: ${formatCurrency(baseCase.netProfit)}`,
+      `Profit Margin: ${formatPercent(baseCase.margin)}`,
+      `Return on Investment: ${formatPercent(baseCase.roi)}`
+    ];
+    
+    costLines.forEach(line => {
+      doc.text(line, margin, currentY);
+      currentY += 7;
+    });
+    
+    currentY += 15;
   }
   
   // Detailed Analysis Table
@@ -153,18 +175,28 @@ export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void 
     columnStyles: {
       0: { fontStyle: 'bold', halign: 'left' },
       1: { halign: 'right' },
-      2: { halign: 'right', textColor: [231, 76, 60] }, // Red for costs
-      3: { halign: 'right', textColor: [231, 76, 60] }, // Red for costs
-      4: { halign: 'right', textColor: [46, 125, 50] }, // Green for profit
-      5: { halign: 'right', textColor: [46, 125, 50] }, // Green for margin
-      6: { halign: 'right', textColor: [46, 125, 50] }, // Green for ROI
-      7: { halign: 'right', textColor: [46, 125, 50] }  // Green for profit/sqft
+      2: { halign: 'right' }, // Keep costs black
+      3: { halign: 'right' }, // Keep costs black
+      4: { halign: 'right' }, // Profit - will be colored based on value
+      5: { halign: 'right' }, // Margin - will be colored based on value
+      6: { halign: 'right' }, // ROI - will be colored based on value
+      7: { halign: 'right' }  // Profit/sqft - will be colored based on value
     },
     didParseCell: function(data) {
       // Highlight base case row
       if (data.row.index !== undefined && tableData[data.row.index] && tableData[data.row.index][0] === 'Base Case') {
         data.cell.styles.fillColor = [173, 216, 230]; // Light blue
         data.cell.styles.fontStyle = 'bold';
+      }
+      
+      // Color profits based on positive/negative values
+      if (data.column.index >= 4) { // Net Profit, Margin, ROI, $/SqFt columns
+        const cellText = data.cell.text[0];
+        if (cellText && cellText.includes('-')) {
+          data.cell.styles.textColor = [231, 76, 60]; // Red for negative
+        } else if (cellText && (cellText.includes('$') || cellText.includes('%'))) {
+          data.cell.styles.textColor = [46, 125, 50]; // Green for positive
+        }
       }
     }
   });

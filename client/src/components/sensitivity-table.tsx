@@ -216,8 +216,8 @@ export default function SensitivityTable({
               <TableRow className="bg-gray-50">
                 <TableHead className="py-4 px-6 font-semibold text-gray-700">Scenario</TableHead>
                 <TableHead className="py-4 px-6 font-semibold text-gray-700">Sales Price</TableHead>
-                <TableHead className="py-4 px-6 font-semibold text-red-600">Sales Costs</TableHead>
-                <TableHead className="py-4 px-6 font-semibold text-red-600">Total Costs</TableHead>
+                <TableHead className="py-4 px-6 font-semibold text-gray-700">Sales Costs</TableHead>
+                <TableHead className="py-4 px-6 font-semibold text-gray-700">Total Costs</TableHead>
                 <TableHead className="py-4 px-6 font-semibold text-green-600">Net Profit</TableHead>
                 <TableHead className="py-4 px-6 font-semibold text-green-600">Margin %</TableHead>
                 <TableHead className="py-4 px-6 font-semibold text-green-600">ROI %</TableHead>
@@ -233,8 +233,8 @@ export default function SensitivityTable({
                     </Badge>
                   </TableCell>
                   <TableCell className="py-4 px-6 font-semibold text-gray-900">{formatCurrency(scenario.salesPrice)}</TableCell>
-                  <TableCell className="py-4 px-6 text-red-600 font-semibold">{formatCurrency(scenario.salesCosts)}</TableCell>
-                  <TableCell className="py-4 px-6 text-red-600 font-semibold">{formatCurrency(scenario.totalCosts)}</TableCell>
+                  <TableCell className="py-4 px-6 text-gray-900 font-semibold">{formatCurrency(scenario.salesCosts)}</TableCell>
+                  <TableCell className="py-4 px-6 text-gray-900 font-semibold">{formatCurrency(scenario.totalCosts)}</TableCell>
                   <TableCell className={`py-4 px-6 font-bold text-lg ${scenario.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {formatCurrency(scenario.netProfit)}
                   </TableCell>
