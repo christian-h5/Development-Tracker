@@ -2,18 +2,18 @@
 
 ## Quick Deploy (Recommended)
 
-### Option 1: Replit Deployments
+### Option 1: Replit Deployments (Recommended)
 1. Click the **"Deploy"** button in the top-right corner of Replit
 2. Choose **"Static"** as the deployment type
-3. Set the build command: `npm run build`
-4. Set the publish directory: `dist/public`
+3. Set the build command: `node build-static.js`
+4. Set the publish directory: `dist`
 5. Click **"Deploy"**
 
 Your app will be live at a `.replit.app` URL within minutes!
 
 ### Option 2: Manual Build + Upload
-1. Run the build command: `npm run build`
-2. Download the `dist/public` folder
+1. Run the build command: `node build-static.js`
+2. Download the `dist` folder
 3. Upload to any static hosting service:
    - **Netlify**: Drag & drop the folder at netlify.com/drop
    - **Vercel**: Connect your GitHub repo at vercel.com
@@ -24,7 +24,7 @@ Your app will be live at a `.replit.app` URL within minutes!
 
 ### Netlify (Easiest)
 - Go to netlify.com
-- Drag the `dist/public` folder to the deploy area
+- Drag the `dist` folder to the deploy area
 - Your site goes live instantly
 - Free SSL and custom domains
 
@@ -44,7 +44,7 @@ firebase deploy
 
 ### GitHub Pages
 1. Push your code to GitHub
-2. Run build and push `dist/public` to `gh-pages` branch
+2. Run build and push `dist` to `gh-pages` branch
 3. Enable GitHub Pages in repository settings
 
 ## Why This Works

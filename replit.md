@@ -166,4 +166,15 @@ Preferred communication style: Simple, everyday language.
   - Enhanced table layout with full-width results section for better readability
   - Added hover effects and highlighted base case scenarios
 
+### Deployment Configuration Fix
+- **Date**: January 11, 2025
+- **Change**: Fixed deployment configuration mismatch between build output and deployment expectations
+- **Impact**:
+  - Resolved "index.html not found" deployment error
+  - Updated build process to use `node build-static.js` for deployment (outputs to `dist/`)
+  - Modified deployment documentation to specify correct build command and publish directory
+  - Created comprehensive deployment guides for Replit and other static hosting providers
+  - Maintains development workflow with `npm run dev` unchanged
+  - Ensures successful static deployment with proper file structure
+
 The application prioritizes developer experience, type safety, and maintainable code structure while providing a responsive and intuitive user interface for real estate development project management.
