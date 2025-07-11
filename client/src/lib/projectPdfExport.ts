@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { Project, PhaseWithUnits, ProjectSummary, UnitType } from '@shared/schema';
+import { convertCostPerMethod, calculateSalesCosts } from '@/lib/calculations';
 
 // Helper functions for formatting
 function formatCurrency(value: number): string {
@@ -160,20 +161,45 @@ export function exportProjectToPDF(options: ProjectPDFExportOptions): void {
         const quantity = unit.quantity || 0;
         totalUnits += quantity;
         
-        const unitCosts = (
-          (parseFloat(unit.hardCosts?.toString() || '0')) +
-          (parseFloat(unit.softCosts?.toString() || '0')) +
-          (parseFloat(unit.landCosts?.toString() || '0')) +
-          (parseFloat(unit.contingencyCosts?.toString() || '0')) +
-          (parseFloat(unit.salesCosts?.toString() || '0')) +
-          (parseFloat(unit.lawyerFees?.toString() || '0')) +
-          (parseFloat(unit.constructionFinancing?.toString() || '0'))
-        ) * quantity;
+        // Get unit type for square footage
+        const unitType = unitTypes.find(ut => ut.id === unit.unitTypeId);
+        const squareFootage = unitType?.squareFootage || 1;
         
-        const unitRevenue = (parseFloat(unit.salesPrice?.toString() || '0')) * quantity;
+        // Calculate per-unit costs using proper conversion methods
+        const perUnitHardCosts = convertCostPerMethod(parseFloat(unit.hardCosts?.toString() || '0'), unit.hardCostsInputMethod || 'perUnit', squareFootage);
+        const perUnitSoftCosts = convertCostPerMethod(parseFloat(unit.softCosts?.toString() || '0'), unit.softCostsInputMethod || 'perUnit', squareFootage);
+        const perUnitLandCosts = convertCostPerMethod(parseFloat(unit.landCosts?.toString() || '0'), unit.landCostsInputMethod || 'perUnit', squareFootage);
+        const perUnitContingencyCosts = convertCostPerMethod(parseFloat(unit.contingencyCosts?.toString() || '0'), unit.contingencyCostsInputMethod || 'perUnit', squareFootage);
+        const perUnitLawyerFees = convertCostPerMethod(parseFloat(unit.lawyerFees?.toString() || '0'), unit.lawyerFeesInputMethod || 'perUnit', squareFootage);
+        const perUnitConstructionFinancing = unit.useConstructionFinancing ? 
+          convertCostPerMethod(parseFloat(unit.constructionFinancing?.toString() || '0'), unit.constructionFinancingInputMethod || 'perUnit', squareFootage) : 0;
         
-        totalCosts += unitCosts;
-        totalRevenue += unitRevenue;
+        // Calculate revenue and sales costs from individual prices
+        const individualPrices = unit.individualPrices ? JSON.parse(unit.individualPrices) : [];
+        const baseSalesPrice = parseFloat(unit.salesPrice?.toString() || '0');
+        
+        let phaseRevenue = 0;
+        let phaseSalesCosts = 0;
+        
+        for (let i = 0; i < quantity; i++) {
+          const unitPrice = individualPrices[i] || baseSalesPrice;
+          phaseRevenue += unitPrice;
+          
+          // Calculate sales costs - use custom if entered, otherwise auto-calculate
+          const userSalesCosts = parseFloat(unit.salesCosts?.toString() || '0');
+          if (userSalesCosts > 0) {
+            const perUnitSalesCosts = convertCostPerMethod(userSalesCosts, unit.salesCostsInputMethod || 'perUnit', squareFootage);
+            phaseSalesCosts += perUnitSalesCosts;
+          } else if (unitPrice > 0) {
+            phaseSalesCosts += calculateSalesCosts(unitPrice);
+          }
+        }
+        
+        // Total costs for this unit = (per-unit costs * quantity) + total sales costs
+        const unitTotalCosts = (perUnitHardCosts + perUnitSoftCosts + perUnitLandCosts + perUnitContingencyCosts + perUnitLawyerFees + perUnitConstructionFinancing) * quantity + phaseSalesCosts;
+        
+        totalCosts += unitTotalCosts;
+        totalRevenue += phaseRevenue;
       });
       
       const netProfit = totalRevenue - totalCosts;
@@ -261,24 +287,53 @@ export function exportProjectToPDF(options: ProjectPDFExportOptions): void {
       const unitHeaders = ['Unit Type', 'Quantity', 'Hard Costs', 'Soft Costs', 'Sales Price', 'Net Profit'];
       const unitData = phase.units.map(unit => {
         const quantity = unit.quantity || 0;
-        const hardCosts = parseFloat(unit.hardCosts?.toString() || '0') * quantity;
-        const softCosts = parseFloat(unit.softCosts?.toString() || '0') * quantity;
-        const totalCosts = hardCosts + softCosts + 
-          (parseFloat(unit.landCosts?.toString() || '0') * quantity) +
-          (parseFloat(unit.contingencyCosts?.toString() || '0') * quantity) +
-          (parseFloat(unit.salesCosts?.toString() || '0') * quantity) +
-          (parseFloat(unit.lawyerFees?.toString() || '0') * quantity) +
-          (parseFloat(unit.constructionFinancing?.toString() || '0') * quantity);
-        const revenue = parseFloat(unit.salesPrice?.toString() || '0') * quantity;
-        const profit = revenue - totalCosts;
+        
+        // Get unit type for square footage
+        const unitType = unitTypes.find(ut => ut.id === unit.unitTypeId);
+        const squareFootage = unitType?.squareFootage || 1;
+        
+        // Calculate proper costs using conversion methods
+        const perUnitHardCosts = convertCostPerMethod(parseFloat(unit.hardCosts?.toString() || '0'), unit.hardCostsInputMethod || 'perUnit', squareFootage);
+        const perUnitSoftCosts = convertCostPerMethod(parseFloat(unit.softCosts?.toString() || '0'), unit.softCostsInputMethod || 'perUnit', squareFootage);
+        const perUnitLandCosts = convertCostPerMethod(parseFloat(unit.landCosts?.toString() || '0'), unit.landCostsInputMethod || 'perUnit', squareFootage);
+        const perUnitContingencyCosts = convertCostPerMethod(parseFloat(unit.contingencyCosts?.toString() || '0'), unit.contingencyCostsInputMethod || 'perUnit', squareFootage);
+        const perUnitLawyerFees = convertCostPerMethod(parseFloat(unit.lawyerFees?.toString() || '0'), unit.lawyerFeesInputMethod || 'perUnit', squareFootage);
+        const perUnitConstructionFinancing = unit.useConstructionFinancing ? 
+          convertCostPerMethod(parseFloat(unit.constructionFinancing?.toString() || '0'), unit.constructionFinancingInputMethod || 'perUnit', squareFootage) : 0;
+        
+        // Calculate revenue and sales costs from individual prices
+        const individualPrices = unit.individualPrices ? JSON.parse(unit.individualPrices) : [];
+        const baseSalesPrice = parseFloat(unit.salesPrice?.toString() || '0');
+        
+        let totalUnitRevenue = 0;
+        let totalUnitSalesCosts = 0;
+        
+        for (let i = 0; i < quantity; i++) {
+          const unitPrice = individualPrices[i] || baseSalesPrice;
+          totalUnitRevenue += unitPrice;
+          
+          // Calculate sales costs - use custom if entered, otherwise auto-calculate
+          const userSalesCosts = parseFloat(unit.salesCosts?.toString() || '0');
+          if (userSalesCosts > 0) {
+            const perUnitSalesCosts = convertCostPerMethod(userSalesCosts, unit.salesCostsInputMethod || 'perUnit', squareFootage);
+            totalUnitSalesCosts += perUnitSalesCosts;
+          } else if (unitPrice > 0) {
+            totalUnitSalesCosts += calculateSalesCosts(unitPrice);
+          }
+        }
+        
+        const hardCosts = perUnitHardCosts * quantity;
+        const softCosts = perUnitSoftCosts * quantity;
+        const totalCosts = (perUnitHardCosts + perUnitSoftCosts + perUnitLandCosts + perUnitContingencyCosts + perUnitLawyerFees + perUnitConstructionFinancing) * quantity + totalUnitSalesCosts;
+        const netProfit = totalUnitRevenue - totalCosts;
         
         return [
           unit.unitType.name,
           quantity.toString(),
           formatCurrency(hardCosts),
           formatCurrency(softCosts),
-          formatCurrency(revenue),
-          formatCurrency(profit)
+          formatCurrency(totalUnitRevenue),
+          formatCurrency(netProfit)
         ];
       });
       
@@ -374,7 +429,7 @@ export function exportProjectToPDF(options: ProjectPDFExportOptions): void {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       
-      // Calculate total costs by category across all phases
+      // Calculate total costs by category across all phases using proper conversion methods
       let totalHardCosts = 0;
       let totalSoftCosts = 0;
       let totalLandCosts = 0;
@@ -386,13 +441,43 @@ export function exportProjectToPDF(options: ProjectPDFExportOptions): void {
       phases.forEach(phase => {
         phase.units.forEach(unit => {
           const quantity = unit.quantity || 0;
-          totalHardCosts += (parseFloat(unit.hardCosts?.toString() || '0')) * quantity;
-          totalSoftCosts += (parseFloat(unit.softCosts?.toString() || '0')) * quantity;
-          totalLandCosts += (parseFloat(unit.landCosts?.toString() || '0')) * quantity;
-          totalContingencyCosts += (parseFloat(unit.contingencyCosts?.toString() || '0')) * quantity;
-          totalSalesCosts += (parseFloat(unit.salesCosts?.toString() || '0')) * quantity;
-          totalLawyerFees += (parseFloat(unit.lawyerFees?.toString() || '0')) * quantity;
-          totalConstructionFinancing += (parseFloat(unit.constructionFinancing?.toString() || '0')) * quantity;
+          
+          // Get unit type for square footage
+          const unitType = unitTypes.find(ut => ut.id === unit.unitTypeId);
+          const squareFootage = unitType?.squareFootage || 1;
+          
+          // Calculate proper costs using conversion methods
+          const perUnitHardCosts = convertCostPerMethod(parseFloat(unit.hardCosts?.toString() || '0'), unit.hardCostsInputMethod || 'perUnit', squareFootage);
+          const perUnitSoftCosts = convertCostPerMethod(parseFloat(unit.softCosts?.toString() || '0'), unit.softCostsInputMethod || 'perUnit', squareFootage);
+          const perUnitLandCosts = convertCostPerMethod(parseFloat(unit.landCosts?.toString() || '0'), unit.landCostsInputMethod || 'perUnit', squareFootage);
+          const perUnitContingencyCosts = convertCostPerMethod(parseFloat(unit.contingencyCosts?.toString() || '0'), unit.contingencyCostsInputMethod || 'perUnit', squareFootage);
+          const perUnitLawyerFees = convertCostPerMethod(parseFloat(unit.lawyerFees?.toString() || '0'), unit.lawyerFeesInputMethod || 'perUnit', squareFootage);
+          const perUnitConstructionFinancing = unit.useConstructionFinancing ? 
+            convertCostPerMethod(parseFloat(unit.constructionFinancing?.toString() || '0'), unit.constructionFinancingInputMethod || 'perUnit', squareFootage) : 0;
+          
+          totalHardCosts += perUnitHardCosts * quantity;
+          totalSoftCosts += perUnitSoftCosts * quantity;
+          totalLandCosts += perUnitLandCosts * quantity;
+          totalContingencyCosts += perUnitContingencyCosts * quantity;
+          totalLawyerFees += perUnitLawyerFees * quantity;
+          totalConstructionFinancing += perUnitConstructionFinancing * quantity;
+          
+          // Calculate sales costs from individual prices
+          const individualPrices = unit.individualPrices ? JSON.parse(unit.individualPrices) : [];
+          const baseSalesPrice = parseFloat(unit.salesPrice?.toString() || '0');
+          
+          for (let i = 0; i < quantity; i++) {
+            const unitPrice = individualPrices[i] || baseSalesPrice;
+            
+            // Calculate sales costs - use custom if entered, otherwise auto-calculate
+            const userSalesCosts = parseFloat(unit.salesCosts?.toString() || '0');
+            if (userSalesCosts > 0) {
+              const perUnitSalesCosts = convertCostPerMethod(userSalesCosts, unit.salesCostsInputMethod || 'perUnit', squareFootage);
+              totalSalesCosts += perUnitSalesCosts;
+            } else if (unitPrice > 0) {
+              totalSalesCosts += calculateSalesCosts(unitPrice);
+            }
+          }
         });
       });
       
