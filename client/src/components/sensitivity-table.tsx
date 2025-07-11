@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { exportSensitivityAnalysisToPDF } from "@/lib/pdfExport";
-import { generatePDFReport } from "@/lib/pdfGenerator";
+import { generatePDFReport } from "@/lib/simplePdfGenerator";
 import { FileDown } from "lucide-react";
 
 interface ScenarioData {

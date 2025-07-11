@@ -52,6 +52,10 @@ interface PDFReportOptions {
 }
 
 export function generatePDFReport(options: PDFReportOptions): void {
+  generateHTMLReport(options);
+}
+
+function generatePDFReportOriginal(options: PDFReportOptions): void {
   const {
     projectName = "Unit Profitability Analysis",
     unitTypeName = "Unit Type",
