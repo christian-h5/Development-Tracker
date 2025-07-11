@@ -7,7 +7,7 @@ channel = "stable-24_05"
 
 [deployment]
 deploymentTarget = "static"
-build = ["sh", "-c", "node build-static.js"]
+build = ["sh", "-c", "node deploy-fix.js"]
 publicDir = "dist"
 
 [[ports]]
