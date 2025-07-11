@@ -88,48 +88,88 @@ export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void 
   
   currentY += 10;
   
-  // Summary Section
+  // Summary Section with two columns
   if (scenarios.length > 0) {
     const baseCase = scenarios.find(s => s.label === 'Base Case') || scenarios[0];
+    const sortedScenarios = [...scenarios].sort((a, b) => a.salesPrice - b.salesPrice);
+    const bestCase = sortedScenarios[sortedScenarios.length - 1];
+    const worstCase = sortedScenarios[0];
     
+    // Two-column layout setup
+    const leftColumnX = margin;
+    const rightColumnX = pageWidth / 2 + 10;
+    const columnWidth = (pageWidth - margin * 2 - 20) / 2;
+    
+    // Executive Summary Header
     doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
     doc.text('Executive Summary', margin, currentY);
-    currentY += 10;
+    currentY += 12;
+    
+    // Left Column - Base Case
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('Base Case', leftColumnX, currentY);
+    
+    // Right Column - Cost Breakdown
+    doc.text('Cost Breakdown', rightColumnX, currentY);
+    currentY += 8;
     
     doc.setFont('helvetica', 'normal');
-    const summaryLines = [
-      `Base Case Sales Price: ${formatCurrency(baseCase.salesPrice)}`,
-      `Base Case Net Profit: ${formatCurrency(baseCase.netProfit)}`,
-      `Base Case Margin: ${formatPercent(baseCase.margin)}`,
-      `Base Case ROI: ${formatPercent(baseCase.roi)}`,
-      `Base Case Profit per Sq Ft: ${formatCurrency(baseCase.profitPerSqFt)}`
+    doc.setFontSize(10);
+    
+    // Left column content
+    const leftLines = [
+      `Sales Price: ${formatCurrency(baseCase.salesPrice)}`,
+      `Net Profit: ${formatCurrency(baseCase.netProfit)}`,
+      `Margin: ${formatPercent(baseCase.margin)}`,
+      `ROI: ${formatPercent(baseCase.roi)}`,
+      `Profit per Sq Ft: ${formatCurrency(baseCase.profitPerSqFt)}`
     ];
     
-    summaryLines.forEach(line => {
-      doc.text(line, margin, currentY);
-      currentY += 7;
-    });
-    
-    currentY += 15;
-
-    // Cost Breakdown Section
-    doc.setFont('helvetica', 'bold');
-    doc.text('Cost Breakdown (Base Case)', margin, currentY);
-    currentY += 10;
-    
-    doc.setFont('helvetica', 'normal');
-    const costLines = [
+    // Right column content
+    const rightLines = [
       `Sales Price: ${formatCurrency(baseCase.salesPrice)}`,
       `Sales Costs: ${formatCurrency(baseCase.salesCosts)}`,
-      `Total Development Costs: ${formatCurrency(baseCase.totalCosts)}`,
+      `Development Costs: ${formatCurrency(baseCase.totalCosts)}`,
       `Net Profit: ${formatCurrency(baseCase.netProfit)}`,
-      `Profit Margin: ${formatPercent(baseCase.margin)}`,
-      `Return on Investment: ${formatPercent(baseCase.roi)}`
+      `Margin: ${formatPercent(baseCase.margin)}`
     ];
     
-    costLines.forEach(line => {
-      doc.text(line, margin, currentY);
-      currentY += 7;
+    const maxLines = Math.max(leftLines.length, rightLines.length);
+    const startY = currentY;
+    
+    for (let i = 0; i < maxLines; i++) {
+      if (i < leftLines.length) {
+        doc.text(leftLines[i], leftColumnX, currentY);
+      }
+      if (i < rightLines.length) {
+        doc.text(rightLines[i], rightColumnX, currentY);
+      }
+      currentY += 6;
+    }
+    
+    currentY = startY + (maxLines * 6) + 10;
+    
+    // Risk Analysis Section
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('Risk Analysis', leftColumnX, currentY);
+    currentY += 8;
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    
+    const riskLines = [
+      `Best Case (${bestCase.label}): ${formatCurrency(bestCase.salesPrice)} → ${formatPercent(bestCase.margin)} margin`,
+      `Worst Case (${worstCase.label}): ${formatCurrency(worstCase.salesPrice)} → ${formatPercent(worstCase.margin)} margin`,
+      `Price Range: ${formatCurrency(worstCase.salesPrice)} - ${formatCurrency(bestCase.salesPrice)}`,
+      `Margin Range: ${formatPercent(worstCase.margin)} - ${formatPercent(bestCase.margin)}`
+    ];
+    
+    riskLines.forEach(line => {
+      doc.text(line, leftColumnX, currentY);
+      currentY += 6;
     });
     
     currentY += 15;
@@ -155,7 +195,10 @@ export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void 
     'Profit/SqFt'
   ];
   
-  const summaryData = scenarios.map(scenario => [
+  // Sort scenarios by sales price (lowest to highest)
+  const sortedScenariosForTable = [...scenarios].sort((a, b) => a.salesPrice - b.salesPrice);
+  
+  const summaryData = sortedScenariosForTable.map(scenario => [
     scenario.label,
     formatCurrency(scenario.salesPrice),
     formatCurrency(scenario.totalCosts),
@@ -172,9 +215,11 @@ export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void 
     startY: currentY,
     theme: 'striped',
     headStyles: {
-      fillColor: [41, 128, 185],
-      textColor: [255, 255, 255],
-      fontStyle: 'bold'
+      fillColor: [255, 255, 255], // White background for headers
+      textColor: [0, 0, 0], // Black text for headers
+      fontStyle: 'bold',
+      lineWidth: 0.5,
+      lineColor: [200, 200, 200]
     },
     bodyStyles: {
       textColor: 50
@@ -253,7 +298,10 @@ export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void 
   
   dynamicHeaders.push('Net Profit');
   
-  const detailedData = scenarios.map(scenario => {
+  // Sort scenarios for detailed table too
+  const sortedDetailedScenarios = [...scenarios].sort((a, b) => a.salesPrice - b.salesPrice);
+  
+  const detailedData = sortedDetailedScenarios.map(scenario => {
     const row = [
       scenario.label,
       formatCurrency(scenario.salesPrice)
@@ -291,9 +339,11 @@ export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void 
     startY: currentY,
     theme: 'striped',
     headStyles: {
-      fillColor: [41, 128, 185],
-      textColor: [255, 255, 255],
-      fontStyle: 'bold'
+      fillColor: [255, 255, 255], // White background for headers
+      textColor: [0, 0, 0], // Black text for headers
+      fontStyle: 'bold',
+      lineWidth: 0.5,
+      lineColor: [200, 200, 200]
     },
     bodyStyles: {
       textColor: 50
