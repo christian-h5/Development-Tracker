@@ -299,26 +299,17 @@ export function generatePDFReport(options: PDFReportOptions): void {
     <div class="section">
         <div class="section-title">Risk Analysis</div>
         <div class="risk-section">
-            <div class="risk-category">
-                <div class="risk-title">PROFITABILITY RANGE:</div>
-                <div class="risk-item">• Margin Range: ${formatPercent(minMargin)} to ${formatPercent(maxMargin)}</div>
-                <div class="risk-item">• ROI Range: ${formatPercent(minROI)} to ${formatPercent(maxROI)}</div>
-                <div class="risk-item">• Profit Range: ${formatCurrency(minProfit)} to ${formatCurrency(maxProfit)}</div>
-            </div>
-            
-            <div class="risk-category">
-                <div class="risk-title">RISK ASSESSMENT:</div>
-                <div class="risk-item">• Best Case Upside: ${formatCurrency(maxProfit - (baseScenario?.netProfit || 0))} above base case</div>
-                <div class="risk-item">• Worst Case Downside: ${formatCurrency((baseScenario?.netProfit || 0) - minProfit)} below base case</div>
-                <div class="risk-item">• Margin Volatility: ${formatPercent(maxMargin - minMargin)} spread</div>
-            </div>
-            
-            <div class="risk-category">
-                <div class="risk-title">KEY RISK FACTORS:</div>
-                <div class="risk-item">• Sales price sensitivity significantly impacts profitability</div>
-                <div class="risk-item">• Market conditions and absorption rates affect timeline</div>
-                <div class="risk-item">• Construction cost inflation risk during development</div>
-                <div class="risk-item">• Interest rate changes affecting financing costs</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                <div>
+                    <div style="margin-bottom: 10px; font-weight: normal;">Profit Range: ${formatCurrency(minProfit)} to ${formatCurrency(maxProfit)}</div>
+                    <div style="margin-bottom: 10px; font-weight: normal;">Average Margin: ${formatPercent(margins.reduce((a, b) => a + b, 0) / margins.length)}</div>
+                    <div style="margin-bottom: 10px; font-weight: normal;">Number of Scenarios: ${scenarios.length}</div>
+                </div>
+                <div>
+                    <div style="margin-bottom: 10px; font-weight: normal;">Break-even: ${scenarios.filter(s => s.netProfit >= 0).length}/${scenarios.length} profitable</div>
+                    <div style="margin-bottom: 10px; font-weight: normal;">Volatility: ${formatCurrency(maxProfit - minProfit)} spread</div>
+                    <div style="margin-bottom: 10px; font-weight: normal;">Risk: ${scenarios.filter(s => s.netProfit < 0).length > 0 ? 'Loss scenarios present' : 'All scenarios profitable'}</div>
+                </div>
             </div>
         </div>
     </div>
