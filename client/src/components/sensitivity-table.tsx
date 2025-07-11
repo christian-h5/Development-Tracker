@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { exportSensitivityAnalysisToPDF } from "@/lib/pdfExport";
+import { generatePDFReport } from "@/lib/pdfGenerator";
 import { FileDown } from "lucide-react";
 
 interface ScenarioData {
@@ -217,29 +218,54 @@ export default function SensitivityTable({
           {scenarios.length > 0 && (
             <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
               <h4 className="font-semibold text-gray-800">Analysis Results</h4>
-              <Button
-                onClick={() => {
-                  try {
-                    exportSensitivityAnalysisToPDF({
-                      projectName,
-                      unitTypeName,
-                      squareFootage,
-                      scenarios,
-                      analysisDate: new Date(),
-                      costBreakdown
-                    });
-                  } catch (error) {
-                    console.error('PDF Export Error:', error);
-                    alert('Error generating PDF. Please check the console for details.');
-                  }
-                }}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <FileDown className="h-4 w-4" />
-                Export PDF
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    try {
+                      exportSensitivityAnalysisToPDF({
+                        projectName,
+                        unitTypeName,
+                        squareFootage,
+                        scenarios,
+                        analysisDate: new Date(),
+                        costBreakdown
+                      });
+                    } catch (error) {
+                      console.error('CSV Export Error:', error);
+                      alert('Error exporting CSV. Please try again.');
+                    }
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <FileDown className="h-4 w-4" />
+                  Export CSV
+                </Button>
+                <Button
+                  onClick={() => {
+                    try {
+                      generatePDFReport({
+                        projectName,
+                        unitTypeName,
+                        squareFootage,
+                        scenarios,
+                        analysisDate: new Date(),
+                        costBreakdown
+                      });
+                    } catch (error) {
+                      console.error('PDF Export Error:', error);
+                      alert('Error generating PDF. Please check that your browser supports PDF generation.');
+                    }
+                  }}
+                  variant="default"
+                  size="sm"
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <FileDown className="h-4 w-4" />
+                  Export PDF
+                </Button>
+              </div>
             </div>
           )}
           <Table className="text-sm">
