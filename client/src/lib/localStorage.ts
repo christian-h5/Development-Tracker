@@ -64,8 +64,8 @@ class LocalStorageService {
     return newId;
   }
 
-  // Initialize with default data if storage is empty
-  initialize(): void {
+  // Initialize with sample data for development
+  initializeWithSampleData(): void {
     const projects = this.getFromStorage<Project[]>(STORAGE_KEYS.PROJECTS, []);
     if (projects.length === 0) {
       // Create default project

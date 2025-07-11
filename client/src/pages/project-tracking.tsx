@@ -156,6 +156,7 @@ export default function ProjectTracking() {
             phases={phases} 
             onEditPhase={handleEditPhase}
             onViewPhase={(phase) => console.log('View phase:', phase)}
+            onAddPhase={handleAddPhase}
           />
         </TabsContent>
 

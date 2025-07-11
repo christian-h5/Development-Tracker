@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Edit, Eye } from "lucide-react";
+import { Edit, Eye, Plus } from "lucide-react";
 import { formatCurrency, formatPercent, calculateSalesCosts, calculateNetProfit, calculateMargin } from "@/lib/calculations";
 import type { PhaseWithUnits } from "@shared/schema";
 
@@ -12,7 +12,7 @@ interface PhaseTableProps {
   onViewPhase: (phase: PhaseWithUnits) => void;
 }
 
-export default function PhaseTable({ phases, onEditPhase, onViewPhase }: PhaseTableProps) {
+export default function PhaseTable({ phases, onEditPhase, onViewPhase, onAddPhase }: PhaseTableProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -85,7 +85,16 @@ export default function PhaseTable({ phases, onEditPhase, onViewPhase }: PhaseTa
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Phase Management</CardTitle>
+        <CardTitle className="flex items-center justify-between">
+          <span>Phase Management</span>
+          <Button 
+            onClick={onAddPhase}
+            className="bg-primary hover:bg-primary/90 gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add Phase
+          </Button>
+        </CardTitle>
         <p className="text-gray-600 text-sm">Track costs, sales, and profitability for each development phase</p>
       </CardHeader>
       <CardContent>
