@@ -1,7 +1,7 @@
 import { 
-  projects, phases, unitTypes, phaseUnits, calculatorScenarios,
-  type Project, type Phase, type UnitType, type PhaseUnit, type CalculatorScenario,
-  type InsertProject, type InsertPhase, type InsertUnitType, type InsertPhaseUnit, type InsertCalculatorScenario,
+  projects, phases, unitTypes, calculatorUnitTypes, phaseUnits, calculatorScenarios,
+  type Project, type Phase, type UnitType, type CalculatorUnitType, type PhaseUnit, type CalculatorScenario,
+  type InsertProject, type InsertPhase, type InsertUnitType, type InsertCalculatorUnitType, type InsertPhaseUnit, type InsertCalculatorScenario,
   type PhaseWithUnits, type ProjectSummary, type FuturePhaseDefaults, type InsertFuturePhaseDefaults
 } from "@shared/schema";
 
@@ -19,10 +19,16 @@ export interface IStorage {
   updatePhase(id: number, phase: Partial<InsertPhase>): Promise<Phase>;
   deletePhase(id: number): Promise<void>;
 
-  // Unit Types
+  // Unit Types (for project tracking)
   getUnitTypes(): Promise<UnitType[]>;
   createUnitType(unitType: InsertUnitType): Promise<UnitType>;
   updateUnitType(id: number, unitType: Partial<InsertUnitType>): Promise<UnitType>;
+
+  // Calculator Unit Types (for calculator only)
+  getCalculatorUnitTypes(): Promise<CalculatorUnitType[]>;
+  createCalculatorUnitType(unitType: InsertCalculatorUnitType): Promise<CalculatorUnitType>;
+  updateCalculatorUnitType(id: number, unitType: Partial<InsertCalculatorUnitType>): Promise<CalculatorUnitType>;
+  deleteCalculatorUnitType(id: number): Promise<void>;
 
   // Phase Units
   createPhaseUnit(phaseUnit: InsertPhaseUnit): Promise<PhaseUnit>;
@@ -31,7 +37,7 @@ export interface IStorage {
   getPhaseUnits(phaseId: number): Promise<(PhaseUnit & { unitType: UnitType })[]>;
 
   // Calculator Scenarios
-  getCalculatorScenario(unitTypeId: number): Promise<CalculatorScenario | undefined>;
+  getCalculatorScenario(calculatorUnitTypeId: number): Promise<CalculatorScenario | undefined>;
   saveCalculatorScenario(scenario: InsertCalculatorScenario): Promise<CalculatorScenario>;
 
    // Future Phase Defaults
@@ -46,12 +52,14 @@ export class MemStorage implements IStorage {
   private projects: Map<number, Project>;
   private phases: Map<number, Phase>;
   private unitTypes: Map<number, UnitType>;
+  private calculatorUnitTypes: Map<number, CalculatorUnitType>;
   private phaseUnits: Map<number, PhaseUnit>;
   private calculatorScenarios: Map<number, CalculatorScenario>;
   private futurePhaseDefaults: Map<number, FuturePhaseDefaults>;
   private currentProjectId: number;
   private currentPhaseId: number;
   private currentUnitTypeId: number;
+  private currentCalculatorUnitTypeId: number;
   private currentPhaseUnitId: number;
   private currentScenarioId: number;
   private currentFuturePhaseDefaultsId: number;
@@ -60,12 +68,14 @@ export class MemStorage implements IStorage {
     this.projects = new Map();
     this.phases = new Map();
     this.unitTypes = new Map();
+    this.calculatorUnitTypes = new Map();
     this.phaseUnits = new Map();
     this.calculatorScenarios = new Map();
     this.futurePhaseDefaults = new Map();
     this.currentProjectId = 1;
     this.currentPhaseId = 1;
     this.currentUnitTypeId = 1;
+    this.currentCalculatorUnitTypeId = 1;
     this.currentPhaseUnitId = 1;
     this.currentScenarioId = 1;
     this.currentFuturePhaseDefaultsId = 1;
@@ -137,6 +147,47 @@ export class MemStorage implements IStorage {
     this.unitTypes.set(2, unitTypeB);
     this.unitTypes.set(3, unitTypeC);
     this.currentUnitTypeId = 4;
+
+    // Create calculator-specific unit types
+    const calculatorUnitTypes = [
+      {
+        id: 1,
+        name: "Studio Apartment",
+        squareFootage: 500,
+        bedrooms: 0,
+        lockOffFlexRooms: 0,
+        description: "Compact studio unit for urban development"
+      },
+      {
+        id: 2,
+        name: "One Bedroom",
+        squareFootage: 750,
+        bedrooms: 1,
+        lockOffFlexRooms: 0,
+        description: "Standard one bedroom apartment"
+      },
+      {
+        id: 3,
+        name: "Two Bedroom",
+        squareFootage: 1100,
+        bedrooms: 2,
+        lockOffFlexRooms: 1,
+        description: "Two bedroom unit with flex space"
+      },
+      {
+        id: 4,
+        name: "Penthouse",
+        squareFootage: 1800,
+        bedrooms: 3,
+        lockOffFlexRooms: 2,
+        description: "Luxury penthouse unit"
+      }
+    ];
+
+    calculatorUnitTypes.forEach(unitType => {
+      this.calculatorUnitTypes.set(unitType.id, unitType);
+    });
+    this.currentCalculatorUnitTypeId = 5;
   }
 
   async getProjects(): Promise<Project[]> {
@@ -246,6 +297,44 @@ export class MemStorage implements IStorage {
     return updated;
   }
 
+  async getCalculatorUnitTypes(): Promise<CalculatorUnitType[]> {
+    return Array.from(this.calculatorUnitTypes.values());
+  }
+
+  async createCalculatorUnitType(insertUnitType: InsertCalculatorUnitType): Promise<CalculatorUnitType> {
+    const unitType: CalculatorUnitType = { 
+      id: this.currentCalculatorUnitTypeId++,
+      name: insertUnitType.name,
+      squareFootage: insertUnitType.squareFootage,
+      bedrooms: insertUnitType.bedrooms || 1,
+      lockOffFlexRooms: insertUnitType.lockOffFlexRooms || 0,
+      description: insertUnitType.description || null
+    };
+    this.calculatorUnitTypes.set(unitType.id, unitType);
+    return unitType;
+  }
+
+  async updateCalculatorUnitType(id: number, updateData: Partial<InsertCalculatorUnitType>): Promise<CalculatorUnitType> {
+    const existing = this.calculatorUnitTypes.get(id);
+    if (!existing) throw new Error("Calculator unit type not found");
+
+    const updated = { ...existing, ...updateData };
+    this.calculatorUnitTypes.set(id, updated);
+    return updated;
+  }
+
+  async deleteCalculatorUnitType(id: number): Promise<void> {
+    // Check if any calculator scenarios are using this unit type
+    const scenarios = Array.from(this.calculatorScenarios.values());
+    const hasScenarios = scenarios.some(scenario => scenario.calculatorUnitTypeId === id);
+    
+    if (hasScenarios) {
+      throw new Error("Cannot delete unit type that has saved scenarios");
+    }
+
+    this.calculatorUnitTypes.delete(id);
+  }
+
   async createPhaseUnit(insertPhaseUnit: InsertPhaseUnit): Promise<PhaseUnit> {
     const phaseUnit: PhaseUnit = { 
       ...insertPhaseUnit, 
@@ -294,13 +383,13 @@ export class MemStorage implements IStorage {
     });
   }
 
-  async getCalculatorScenario(unitTypeId: number): Promise<CalculatorScenario | undefined> {
-    return Array.from(this.calculatorScenarios.values()).find(s => s.unitTypeId === unitTypeId);
+  async getCalculatorScenario(calculatorUnitTypeId: number): Promise<CalculatorScenario | undefined> {
+    return Array.from(this.calculatorScenarios.values()).find(s => s.calculatorUnitTypeId === calculatorUnitTypeId);
   }
 
   async saveCalculatorScenario(insertScenario: InsertCalculatorScenario): Promise<CalculatorScenario> {
-    // Check if scenario already exists for this unit type
-    const existing = Array.from(this.calculatorScenarios.values()).find(s => s.unitTypeId === insertScenario.unitTypeId);
+    // Check if scenario already exists for this calculator unit type
+    const existing = Array.from(this.calculatorScenarios.values()).find(s => s.calculatorUnitTypeId === insertScenario.calculatorUnitTypeId);
 
     if (existing) {
       const updated = { ...existing, ...insertScenario };

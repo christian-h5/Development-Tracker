@@ -10,7 +10,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { calculateSalesCosts, calculateMargin, calculateProfitPerSqFt, calculateROI, formatCurrency } from "@/lib/calculations";
-import type { UnitType, CalculatorScenario } from "@shared/schema";
+import type { CalculatorUnitType, CalculatorScenario } from "@shared/schema";
 
 interface ScenarioData {
   label: string;
@@ -57,9 +57,9 @@ export default function UnitCalculatorForm() {
 
   const { toast } = useToast();
 
-  // Query for unit types
-  const { data: unitTypes = [] } = useQuery({
-    queryKey: ["/api/unit-types"],
+  // Query for calculator unit types
+  const { data: calculatorUnitTypes = [] } = useQuery({
+    queryKey: ["/api/calculator-unit-types"],
   });
 
   // Query for saved scenario
@@ -195,7 +195,7 @@ export default function UnitCalculatorForm() {
     }
 
     const data = {
-      unitTypeId: selectedUnitTypeId,
+      calculatorUnitTypeId: selectedUnitTypeId,
       hardCosts: hardCosts,
       softCosts: softCosts,
       landCosts: landCosts,
@@ -235,12 +235,20 @@ export default function UnitCalculatorForm() {
             <div className="space-y-4 mb-6">
               <div>
                 <Label htmlFor="unitType">Unit Type</Label>
-                <Select onValueChange={(value) => setSelectedUnitTypeId(parseInt(value))}>
+                <Select onValueChange={(value) => {
+                  const unitTypeId = parseInt(value);
+                  const selectedUnitType = calculatorUnitTypes.find((ut: CalculatorUnitType) => ut.id === unitTypeId);
+                  
+                  if (selectedUnitType) {
+                    setSelectedUnitTypeId(unitTypeId);
+                    setSquareFootage(selectedUnitType.squareFootage.toString());
+                  }
+                }}>
                   <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                     <SelectValue placeholder="Select unit type" />
                   </SelectTrigger>
                   <SelectContent className="bg-white border-gray-300">
-                    {unitTypes.map((unitType: UnitType) => (
+                    {calculatorUnitTypes.map((unitType: CalculatorUnitType) => (
                       <SelectItem key={unitType.id} value={unitType.id.toString()} className="text-gray-900 hover:bg-gray-100">
                         {unitType.name} - {unitType.squareFootage} sq ft
                       </SelectItem>
@@ -256,7 +264,7 @@ export default function UnitCalculatorForm() {
                   type="number"
                   value={squareFootage}
                   onChange={(e) => setSquareFootage(e.target.value)}
-                  disabled={!!selectedUnitType}
+                  disabled={!!selectedUnitTypeId}
                 />
               </div>
             </div>

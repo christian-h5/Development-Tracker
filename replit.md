@@ -36,9 +36,10 @@ Preferred communication style: Simple, everyday language.
 ### Core Domain Models
 1. **Projects**: Top-level development projects with metadata
 2. **Phases**: Individual development phases within projects (up to 12 phases)
-3. **Unit Types**: Reusable unit configurations with square footage
-4. **Phase Units**: Unit allocations within phases with cost breakdowns
-5. **Calculator Scenarios**: Profitability analysis scenarios for unit types
+3. **Unit Types**: Reusable unit configurations with square footage (for project tracking)
+4. **Calculator Unit Types**: Independent unit configurations for calculator scenarios only
+5. **Phase Units**: Unit allocations within phases with cost breakdowns
+6. **Calculator Scenarios**: Profitability analysis scenarios for calculator unit types
 
 ### Frontend Components
 - **Navigation System**: Header-based navigation between Project Tracking and Unit Calculator
@@ -116,5 +117,19 @@ Preferred communication style: Simple, everyday language.
 4. **State Management**: Server state via React Query, minimal local state
 5. **Database Strategy**: Drizzle ORM chosen for type safety and migration management
 6. **Development Experience**: Vite integration with Express for seamless full-stack development
+7. **Separated Unit Type Systems**: Calculator unit types completely independent from project tracking unit types for better data isolation and user experience
+
+## Recent Changes (January 2025)
+
+### Calculator Unit Type Separation
+- **Date**: January 11, 2025
+- **Change**: Implemented independent unit type system for calculator functionality
+- **Impact**: 
+  - Calculator now has its own unit types separate from project tracking
+  - Users can manage calculator unit types without affecting project data
+  - Added dedicated unit type manager in calculator section
+  - Schema updated with new `calculatorUnitTypes` table and related types
+  - Storage layer enhanced with calculator-specific CRUD operations
+  - API endpoints added for calculator unit type management
 
 The application prioritizes developer experience, type safety, and maintainable code structure while providing a responsive and intuitive user interface for real estate development project management.

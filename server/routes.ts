@@ -4,7 +4,8 @@ import { storage } from "./storage";
 import { 
   insertProjectSchema, 
   insertPhaseSchema, 
-  insertUnitTypeSchema, 
+  insertUnitTypeSchema,
+  insertCalculatorUnitTypeSchema,
   insertPhaseUnitSchema,
   insertCalculatorScenarioSchema,
   insertFuturePhaseDefaultsSchema
@@ -152,6 +153,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Calculator unit type routes (for calculator only)
+  app.get("/api/calculator-unit-types", async (req, res) => {
+    try {
+      const unitTypes = await storage.getCalculatorUnitTypes();
+      res.json(unitTypes);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get calculator unit types" });
+    }
+  });
+
+  app.post("/api/calculator-unit-types", async (req, res) => {
+    try {
+      const data = insertCalculatorUnitTypeSchema.parse(req.body);
+      const unitType = await storage.createCalculatorUnitType(data);
+      res.json(unitType);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid calculator unit type data" });
+    }
+  });
+
+  app.put("/api/calculator-unit-types/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const data = insertCalculatorUnitTypeSchema.partial().parse(req.body);
+      const unitType = await storage.updateCalculatorUnitType(id, data);
+      res.json(unitType);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update calculator unit type" });
+    }
+  });
+
+  app.delete("/api/calculator-unit-types/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteCalculatorUnitType(id);
+      res.json({ message: "Calculator unit type deleted successfully" });
+    } catch (error: any) {
+      if (error.message === "Cannot delete unit type that has saved scenarios") {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to delete calculator unit type" });
+      }
+    }
+  });
+
   // Phase Unit routes
   app.post("/api/phase-units", async (req, res) => {
     try {
@@ -185,10 +231,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Calculator routes
-  app.get("/api/calculator/:unitTypeId", async (req, res) => {
+  app.get("/api/calculator/:calculatorUnitTypeId", async (req, res) => {
     try {
-      const unitTypeId = parseInt(req.params.unitTypeId);
-      const scenario = await storage.getCalculatorScenario(unitTypeId);
+      const calculatorUnitTypeId = parseInt(req.params.calculatorUnitTypeId);
+      const scenario = await storage.getCalculatorScenario(calculatorUnitTypeId);
       res.json(scenario);
     } catch (error) {
       res.status(500).json({ message: "Failed to get calculator scenario" });

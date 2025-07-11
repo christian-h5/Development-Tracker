@@ -50,6 +50,15 @@ export const unitTypes = pgTable("unit_types", {
   occupancyDate: text("occupancy_date"),
 });
 
+export const calculatorUnitTypes = pgTable("calculator_unit_types", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  squareFootage: integer("square_footage").notNull(),
+  bedrooms: integer("bedrooms").notNull().default(1),
+  lockOffFlexRooms: integer("lock_off_flex_rooms").notNull().default(0),
+  description: text("description"),
+});
+
 export const phaseUnits = pgTable("phase_units", {
   id: serial("id").primaryKey(),
   phaseId: integer("phase_id").notNull(),
@@ -75,7 +84,7 @@ export const phaseUnits = pgTable("phase_units", {
 
 export const calculatorScenarios = pgTable("calculator_scenarios", {
   id: serial("id").primaryKey(),
-  unitTypeId: integer("unit_type_id").notNull(),
+  calculatorUnitTypeId: integer("calculator_unit_type_id").notNull(),
   hardCosts: decimal("hard_costs", { precision: 12, scale: 2 }).notNull(),
   softCosts: decimal("soft_costs", { precision: 12, scale: 2 }).notNull(),
   landCosts: decimal("land_costs", { precision: 12, scale: 2 }).notNull(),
@@ -101,6 +110,7 @@ export const calculatorScenarios = pgTable("calculator_scenarios", {
 export const insertProjectSchema = createInsertSchema(projects).omit({ id: true });
 export const insertPhaseSchema = createInsertSchema(phases).omit({ id: true });
 export const insertUnitTypeSchema = createInsertSchema(unitTypes).omit({ id: true });
+export const insertCalculatorUnitTypeSchema = createInsertSchema(calculatorUnitTypes).omit({ id: true });
 export const insertPhaseUnitSchema = createInsertSchema(phaseUnits).omit({ id: true });
 export const insertCalculatorScenarioSchema = createInsertSchema(calculatorScenarios).omit({ id: true });
 export const insertFuturePhaseDefaultsSchema = createInsertSchema(futurePhaseDefaults).omit({ id: true });
@@ -112,6 +122,8 @@ export type InsertPhase = z.infer<typeof insertPhaseSchema>;
 export type Phase = typeof phases.$inferSelect;
 export type InsertUnitType = z.infer<typeof insertUnitTypeSchema>;
 export type UnitType = typeof unitTypes.$inferSelect;
+export type InsertCalculatorUnitType = z.infer<typeof insertCalculatorUnitTypeSchema>;
+export type CalculatorUnitType = typeof calculatorUnitTypes.$inferSelect;
 export type InsertPhaseUnit = z.infer<typeof insertPhaseUnitSchema>;
 export type PhaseUnit = typeof phaseUnits.$inferSelect;
 export type InsertCalculatorScenario = z.infer<typeof insertCalculatorScenarioSchema>;
