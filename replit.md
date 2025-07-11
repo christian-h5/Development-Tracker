@@ -152,6 +152,8 @@ Preferred communication style: Simple, everyday language.
   - PDF generation for sensitivity analysis reports using jsPDF
   - Professional PDF reports with project details, scenario analysis, and risk metrics
   - Export PDF button in sensitivity analysis results for easy distribution
+  - Project summary PDF export from project dashboard with complete project overview
+  - Comprehensive project PDFs include executive summary, phase breakdown, unit details, and financial analysis
   - JSON format for data backup ensures compatibility and easy restoration
 
 ### UI/UX Improvements

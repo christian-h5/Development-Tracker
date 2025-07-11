@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Layers, CheckCircle, Home, PieChart } from "lucide-react";
+import { Plus, Layers, CheckCircle, Home, PieChart, FileDown } from "lucide-react";
 import { formatCurrency, formatPercent } from "@/lib/calculations";
-import type { ProjectSummary } from "@shared/schema";
+import { exportProjectToPDF } from "@/lib/projectPdfExport";
+import { useToast } from "@/hooks/use-toast";
+import type { ProjectSummary, PhaseWithUnits, UnitType } from "@shared/schema";
 
 interface ProjectDashboardProps {
   projectId: number;
@@ -11,6 +13,8 @@ interface ProjectDashboardProps {
 }
 
 export default function ProjectDashboard({ projectId, onAddPhase }: ProjectDashboardProps) {
+  const { toast } = useToast();
+  
   const { data: project } = useQuery({
     queryKey: ["/api/projects", projectId],
   });
@@ -18,6 +22,45 @@ export default function ProjectDashboard({ projectId, onAddPhase }: ProjectDashb
   const { data: summary } = useQuery<ProjectSummary>({
     queryKey: ["/api/projects", projectId, "summary"],
   });
+
+  const { data: phases } = useQuery<PhaseWithUnits[]>({
+    queryKey: ["/api/projects", projectId, "phases"],
+  });
+
+  const { data: unitTypes } = useQuery<UnitType[]>({
+    queryKey: ["/api/unit-types"],
+  });
+
+  const handleExportPDF = () => {
+    if (!project || !summary || !phases || !unitTypes) {
+      toast({
+        title: "Export Failed",
+        description: "Project data is still loading. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      exportProjectToPDF({
+        project,
+        phases,
+        summary,
+        unitTypes
+      });
+      
+      toast({
+        title: "PDF Exported",
+        description: "Project summary has been exported successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "There was an error generating the PDF. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (!project || !summary) {
     return (
@@ -48,13 +91,23 @@ export default function ProjectDashboard({ projectId, onAddPhase }: ProjectDashb
               <h2 className="text-2xl font-semibold text-gray-900">{project.name}</h2>
               <p className="text-gray-600 mt-1">{project.description}</p>
             </div>
-            <Button 
-            onClick={onAddPhase}
-            className="bg-primary hover:bg-primary/90"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Phase
-          </Button>
+            <div className="flex gap-3">
+              <Button 
+                onClick={handleExportPDF}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <FileDown className="h-4 w-4" />
+                Export PDF
+              </Button>
+              <Button 
+                onClick={onAddPhase}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Phase
+              </Button>
+            </div>
           </div>
 
           {/* Key Metrics Cards */}
