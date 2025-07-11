@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, X } from "lucide-react";
 import SensitivityTable from "./sensitivity-table";
 import CostInputToggle from "./cost-input-toggle";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -52,13 +53,34 @@ export default function UnitCalculatorForm() {
 
   // Scenario price states
   const [scenario1Price, setScenario1Price] = useState("");
-  const [scenario2Price, setScenario2Price] = useState("");
-  const [scenario3Price, setScenario3Price] = useState("");
-  const [scenario4Price, setScenario4Price] = useState("");
+  const [additionalScenarios, setAdditionalScenarios] = useState<Array<{id: number, label: string, price: string}>>([]);
+  const [nextScenarioId, setNextScenarioId] = useState(2);
   
   const [calculatedScenarios, setCalculatedScenarios] = useState<ScenarioData[]>([]);
 
   const { toast } = useToast();
+
+  // Helper functions for managing scenarios
+  const addScenario = () => {
+    setAdditionalScenarios(prev => [...prev, {
+      id: nextScenarioId,
+      label: `Scenario ${nextScenarioId - 1}`,
+      price: ""
+    }]);
+    setNextScenarioId(prev => prev + 1);
+  };
+
+  const removeScenario = (id: number) => {
+    setAdditionalScenarios(prev => prev.filter(scenario => scenario.id !== id));
+  };
+
+  const updateScenarioPrice = (id: number, price: string) => {
+    setAdditionalScenarios(prev =>
+      prev.map(scenario =>
+        scenario.id === id ? { ...scenario, price } : scenario
+      )
+    );
+  };
 
   // Query for calculator unit types
   const { data: calculatorUnitTypes = [] } = useQuery({
@@ -163,9 +185,10 @@ export default function UnitCalculatorForm() {
 
     const scenarios = [
       { label: "Base Case", price: parseFloat(scenario1Price) || 0 },
-      { label: "Scenario 1", price: parseFloat(scenario2Price) || 0 },
-      { label: "Scenario 2", price: parseFloat(scenario3Price) || 0 },
-      { label: "Scenario 3", price: parseFloat(scenario4Price) || 0 },
+      ...additionalScenarios.map(scenario => ({
+        label: scenario.label,
+        price: parseFloat(scenario.price) || 0
+      }))
     ].filter(s => s.price > 0);
 
     const calculated = scenarios.map(scenario => {
@@ -399,38 +422,39 @@ export default function UnitCalculatorForm() {
                 />
               </div>
 
-              <div>
-                <Label htmlFor="scenario2">Scenario 1</Label>
-                <Input
-                  id="scenario2"
-                  type="number"
-                  value={scenario2Price}
-                  onChange={(e) => setScenario2Price(e.target.value)}
-                  placeholder="Enter sales price"
-                />
-              </div>
+              {additionalScenarios.map((scenario) => (
+                <div key={scenario.id} className="flex gap-2 items-end">
+                  <div className="flex-1">
+                    <Label htmlFor={`scenario${scenario.id}`}>{scenario.label}</Label>
+                    <Input
+                      id={`scenario${scenario.id}`}
+                      type="number"
+                      value={scenario.price}
+                      onChange={(e) => updateScenarioPrice(scenario.id, e.target.value)}
+                      placeholder="Enter sales price"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removeScenario(scenario.id)}
+                    className="mb-0 h-10 px-3"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
 
-              <div>
-                <Label htmlFor="scenario3">Scenario 2</Label>
-                <Input
-                  id="scenario3"
-                  type="number"
-                  value={scenario3Price}
-                  onChange={(e) => setScenario3Price(e.target.value)}
-                  placeholder="Enter sales price"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="scenario4">Scenario 3</Label>
-                <Input
-                  id="scenario4"
-                  type="number"
-                  value={scenario4Price}
-                  onChange={(e) => setScenario4Price(e.target.value)}
-                  placeholder="Enter sales price"
-                />
-              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addScenario}
+                className="w-full flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add Scenario
+              </Button>
             </div>
 
             <Button

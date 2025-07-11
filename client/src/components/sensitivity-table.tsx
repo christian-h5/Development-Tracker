@@ -25,6 +25,7 @@ import { formatCurrency, formatPercent, calculateROI } from "@/lib/calculations"
 
 interface SensitivityTableProps {
   scenarios: ScenarioData[];
+  basePrice?: number;
   onGenerateSensitivity?: (scenarios: ScenarioData[]) => void;
   unitTypeName?: string;
   squareFootage?: number;
@@ -71,9 +72,10 @@ export default function SensitivityTable({
                     `${i * (sensitivityType === 'percentage' ? value : value)}${sensitivityType === 'percentage' ? '%' : '$'} Higher`;
 
         // Calculate costs and metrics for this price
-        const baseSalesPrice = scenarios.find(s => s.label === 'Base Case')?.salesPrice || basePrice;
-        const baseTotalCosts = scenarios.find(s => s.label === 'Base Case')?.totalCosts || 0;
-        const baseSalesCosts = scenarios.find(s => s.label === 'Base Case')?.salesCosts || 0;
+        const baseCaseScenario = scenarios.find(s => s.label === 'Base Case');
+        const baseSalesPrice = baseCaseScenario?.salesPrice || basePrice;
+        const baseTotalCosts = baseCaseScenario?.totalCosts || 0;
+        const baseSalesCosts = baseCaseScenario?.salesCosts || 0;
 
         // Proportionally adjust sales costs if they change with price
         const salesCostRatio = baseSalesPrice > 0 ? baseSalesCosts / baseSalesPrice : 0;
@@ -83,7 +85,7 @@ export default function SensitivityTable({
         const netProfit = adjustedPrice - adjustedTotalCosts;
         const margin = adjustedPrice > 0 ? (netProfit / adjustedPrice) * 100 : 0;
         const roi = adjustedTotalCosts > 0 ? (netProfit / adjustedTotalCosts) * 100 : 0;
-        const profitPerSqFt = netProfit / (scenarios[0]?.profitPerSqFt ? (scenarios[0].netProfit / scenarios[0].profitPerSqFt) || 1 : 1);
+        const profitPerSqFt = squareFootage > 0 ? (netProfit / squareFootage) : 0;
 
         newScenarios.push({
           label,
@@ -98,8 +100,20 @@ export default function SensitivityTable({
       }
     }
 
+    // Include existing custom scenarios (non-generated ones)
+    const existingCustomScenarios = scenarios.filter(s => 
+      s.label !== 'Base Case' && 
+      !s.label.includes('Lower') && 
+      !s.label.includes('Higher') &&
+      !s.label.includes('%') &&
+      !s.label.includes('$')
+    );
+
+    // Combine generated scenarios with existing custom scenarios
+    const combinedScenarios = [...newScenarios, ...existingCustomScenarios];
+
     if (onGenerateSensitivity) {
-      onGenerateSensitivity(newScenarios);
+      onGenerateSensitivity(combinedScenarios);
     }
   };
   const getBadgeColor = (label: string) => {
@@ -218,10 +232,10 @@ export default function SensitivityTable({
                 <TableHead className="py-4 px-6 font-semibold text-gray-700">Sales Price</TableHead>
                 <TableHead className="py-4 px-6 font-semibold text-gray-700">Sales Costs</TableHead>
                 <TableHead className="py-4 px-6 font-semibold text-gray-700">Total Costs</TableHead>
-                <TableHead className="py-4 px-6 font-semibold text-green-600">Net Profit</TableHead>
-                <TableHead className="py-4 px-6 font-semibold text-green-600">Margin %</TableHead>
-                <TableHead className="py-4 px-6 font-semibold text-green-600">ROI %</TableHead>
-                <TableHead className="py-4 px-6 font-semibold text-green-600">$/SqFt</TableHead>
+                <TableHead className="py-4 px-6 font-semibold text-white">Net Profit</TableHead>
+                <TableHead className="py-4 px-6 font-semibold text-white">Margin %</TableHead>
+                <TableHead className="py-4 px-6 font-semibold text-white">ROI %</TableHead>
+                <TableHead className="py-4 px-6 font-semibold text-white">$/SqFt</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
