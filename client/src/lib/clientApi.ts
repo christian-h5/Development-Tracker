@@ -1,4 +1,4 @@
-import { clientStorage } from "./clientStorage";
+import { localStorage as clientStorage } from "./localStorage";
 import type {
   Project, Phase, UnitType, CalculatorUnitType, PhaseUnit, CalculatorScenario, FuturePhaseDefaults,
   InsertProject, InsertPhase, InsertUnitType, InsertCalculatorUnitType, InsertPhaseUnit, InsertCalculatorScenario, InsertFuturePhaseDefaults,

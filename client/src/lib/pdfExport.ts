@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import 'jspdf-autotable';
 // Helper functions for formatting
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -39,6 +39,12 @@ interface PDFExportOptions {
     constructionFinancing?: number;
     useConstructionFinancing?: boolean;
   };
+}
+
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
 }
 
 export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void {

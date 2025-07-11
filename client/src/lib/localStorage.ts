@@ -405,3 +405,6 @@ class LocalStorageService {
 }
 
 export const localStorageService = new LocalStorageService();
+
+// Export as default for easier imports
+export { localStorageService as localStorage };
