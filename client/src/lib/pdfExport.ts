@@ -213,19 +213,24 @@ export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void 
     head: [summaryHeaders],
     body: summaryData,
     startY: currentY,
-    theme: 'striped',
+    theme: 'grid',
     headStyles: {
-      fillColor: [255, 255, 255], // White background for headers
-      textColor: [0, 0, 0], // Black text for headers
+      fillColor: [248, 249, 250], // Very light gray background
+      textColor: [0, 0, 0], // Black text
       fontStyle: 'bold',
+      fontSize: 10,
+      halign: 'center',
       lineWidth: 0.5,
       lineColor: [200, 200, 200]
     },
     bodyStyles: {
-      textColor: 50
+      textColor: [0, 0, 0], // Black text for all body cells
+      fontSize: 9,
+      lineWidth: 0.5,
+      lineColor: [220, 220, 220]
     },
     alternateRowStyles: {
-      fillColor: [245, 245, 245]
+      fillColor: [252, 252, 252] // Very subtle alternating rows
     },
     columnStyles: {
       0: { fontStyle: 'bold', halign: 'left' },
@@ -239,19 +244,12 @@ export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void 
     didParseCell: function(data) {
       // Highlight base case row
       if (data.row.index !== undefined && summaryData[data.row.index] && summaryData[data.row.index][0] === 'Base Case') {
-        data.cell.styles.fillColor = [173, 216, 230]; // Light blue
+        data.cell.styles.fillColor = [230, 240, 250]; // Light blue
         data.cell.styles.fontStyle = 'bold';
       }
       
-      // Color profits based on positive/negative values (columns 3, 4, 5, 6)
-      if (data.column.index >= 3) {
-        const cellText = data.cell.text[0];
-        if (cellText && cellText.includes('-')) {
-          data.cell.styles.textColor = [231, 76, 60]; // Red for negative
-        } else if (cellText && (cellText.includes('$') || cellText.includes('%'))) {
-          data.cell.styles.textColor = [46, 125, 50]; // Green for positive
-        }
-      }
+      // Keep all text black for consistency
+      data.cell.styles.textColor = [0, 0, 0];
     }
   });
   
@@ -337,19 +335,24 @@ export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void 
     head: [dynamicHeaders],
     body: detailedData,
     startY: currentY,
-    theme: 'striped',
+    theme: 'grid',
     headStyles: {
-      fillColor: [255, 255, 255], // White background for headers
-      textColor: [0, 0, 0], // Black text for headers
+      fillColor: [248, 249, 250], // Very light gray background
+      textColor: [0, 0, 0], // Black text
       fontStyle: 'bold',
+      fontSize: 10,
+      halign: 'center',
       lineWidth: 0.5,
       lineColor: [200, 200, 200]
     },
     bodyStyles: {
-      textColor: 50
+      textColor: [0, 0, 0], // Black text for all body cells
+      fontSize: 9,
+      lineWidth: 0.5,
+      lineColor: [220, 220, 220]
     },
     alternateRowStyles: {
-      fillColor: [245, 245, 245]
+      fillColor: [252, 252, 252] // Very subtle alternating rows
     },
     columnStyles: dynamicHeaders.reduce((acc, header, index) => {
       if (index === 0) {
@@ -362,74 +365,16 @@ export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void 
     didParseCell: function(data) {
       // Highlight base case row
       if (data.row.index !== undefined && detailedData[data.row.index] && detailedData[data.row.index][0] === 'Base Case') {
-        data.cell.styles.fillColor = [173, 216, 230]; // Light blue
+        data.cell.styles.fillColor = [230, 240, 250]; // Light blue
         data.cell.styles.fontStyle = 'bold';
       }
       
-      // Color the Net Profit column (last column)
-      if (data.column.index === dynamicHeaders.length - 1) {
-        const cellText = data.cell.text[0];
-        if (cellText && cellText.includes('-')) {
-          data.cell.styles.textColor = [231, 76, 60]; // Red for negative
-        } else if (cellText && cellText.includes('$')) {
-          data.cell.styles.textColor = [46, 125, 50]; // Green for positive
-        }
-      }
+      // Keep all text black for consistency
+      data.cell.styles.textColor = [0, 0, 0];
     }
   });
   
-  // Add risk analysis section in two columns on first page
-  const summaryFinalY = (doc as any).lastAutoTable.finalY;
-  const pageHeight = doc.internal.pageSize.height;
-  
-  if (summaryFinalY < pageHeight - 100) {
-    let riskY = summaryFinalY + 20;
-    
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0);
-    doc.text('Risk Analysis', margin, riskY);
-    riskY += 15;
-    
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    
-    // Calculate risk metrics
-    const profits = scenarios.map(s => s.netProfit);
-    const margins = scenarios.map(s => s.margin);
-    const minProfit = Math.min(...profits);
-    const maxProfit = Math.max(...profits);
-    const avgMargin = margins.reduce((a, b) => a + b, 0) / margins.length;
-    
-    const leftColumnLines = [
-      `Profit Range: ${formatCurrency(minProfit)} to ${formatCurrency(maxProfit)}`,
-      `Average Margin: ${formatPercent(avgMargin)}`,
-      `Number of Scenarios: ${scenarios.length}`
-    ];
-    
-    const rightColumnLines = [
-      `Break-even: ${scenarios.filter(s => s.netProfit >= 0).length}/${scenarios.length} profitable`,
-      `Volatility: ${formatCurrency(maxProfit - minProfit)} spread`,
-      `Risk: ${scenarios.filter(s => s.netProfit < 0).length > 0 ? 'Loss scenarios present' : 'All scenarios profitable'}`
-    ];
-    
-    const columnWidth = (pageWidth - 2 * margin) / 2;
-    const rightColumnX = margin + columnWidth + 10;
-    
-    // Left column
-    leftColumnLines.forEach((line, index) => {
-      if (riskY + (index * 6) < pageHeight - 25) {
-        doc.text(line, margin, riskY + (index * 6));
-      }
-    });
-    
-    // Right column
-    rightColumnLines.forEach((line, index) => {
-      if (riskY + (index * 6) < pageHeight - 25) {
-        doc.text(line, rightColumnX, riskY + (index * 6));
-      }
-    });
-  }
+
   
   // Add footer to all pages
   const totalPages = doc.getNumberOfPages();
