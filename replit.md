@@ -143,6 +143,17 @@ Preferred communication style: Simple, everyday language.
   - Storage layer enhanced with calculator-specific CRUD operations
   - API endpoints added for calculator unit type management
 
+### Export/Import and PDF Generation
+- **Date**: January 11, 2025
+- **Change**: Added comprehensive export/import functionality and PDF reporting capabilities
+- **Impact**:
+  - Export/Import buttons in navigation header for backup and data transfer
+  - Complete data backup includes all projects, phases, unit types, and scenarios
+  - PDF generation for sensitivity analysis reports using jsPDF
+  - Professional PDF reports with project details, scenario analysis, and risk metrics
+  - Export PDF button in sensitivity analysis results for easy distribution
+  - JSON format for data backup ensures compatibility and easy restoration
+
 ### UI/UX Improvements
 - **Date**: January 11, 2025
 - **Change**: Enhanced profitability analysis design and removed flex rooms from calculator

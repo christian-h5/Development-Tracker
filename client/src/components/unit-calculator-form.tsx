@@ -447,7 +447,14 @@ export default function UnitCalculatorForm() {
         {/* Full-width results section */}
         {calculatedScenarios.length > 0 && (
           <div className="mt-10 border-t pt-8">
-            <SensitivityTable scenarios={calculatedScenarios} />
+            <SensitivityTable 
+              scenarios={calculatedScenarios} 
+              basePrice={parseFloat(scenario1Price) || 0}
+              onGenerateSensitivity={setCalculatedScenarios}
+              unitTypeName={selectedUnitType?.name || "Unit Type"}
+              squareFootage={parseFloat(squareFootage) || 0}
+              projectName="Unit Calculator Analysis"
+            />
           </div>
         )}
       </CardContent>

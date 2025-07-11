@@ -26,7 +26,7 @@ interface Counters {
 }
 
 class LocalStorageService {
-  private getFromStorage<T>(key: string, defaultValue: T): T {
+  getFromStorage<T>(key: string, defaultValue: T): T {
     try {
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : defaultValue;
@@ -36,7 +36,7 @@ class LocalStorageService {
     }
   }
 
-  private saveToStorage<T>(key: string, value: T): void {
+  saveToStorage<T>(key: string, value: T): void {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {

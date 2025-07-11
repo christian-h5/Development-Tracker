@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { exportSensitivityAnalysisToPDF } from "@/lib/pdfExport";
+import { FileDown } from "lucide-react";
 
 interface ScenarioData {
   label: string;
@@ -24,11 +26,21 @@ import { formatCurrency, formatPercent, calculateROI } from "@/lib/calculations"
 interface SensitivityTableProps {
   scenarios: ScenarioData[];
   onGenerateSensitivity?: (scenarios: ScenarioData[]) => void;
+  unitTypeName?: string;
+  squareFootage?: number;
+  projectName?: string;
 }
 
 
 
-export default function SensitivityTable({ scenarios, basePrice = 0, onGenerateSensitivity }: SensitivityTableProps) {
+export default function SensitivityTable({ 
+  scenarios, 
+  basePrice = 0, 
+  onGenerateSensitivity,
+  unitTypeName = "Unit Type",
+  squareFootage = 0,
+  projectName = "Unit Calculator"
+}: SensitivityTableProps) {
   const [sensitivityType, setSensitivityType] = useState<'percentage' | 'dollar'>('percentage');
   const [sensitivityValue, setSensitivityValue] = useState('10');
   const [numberOfScenarios, setNumberOfScenarios] = useState('5');
@@ -179,6 +191,26 @@ export default function SensitivityTable({ scenarios, basePrice = 0, onGenerateS
         )}
 
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+          {scenarios.length > 0 && (
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+              <h4 className="font-semibold text-gray-800">Analysis Results</h4>
+              <Button
+                onClick={() => exportSensitivityAnalysisToPDF({
+                  projectName,
+                  unitTypeName,
+                  squareFootage,
+                  scenarios,
+                  analysisDate: new Date()
+                })}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <FileDown className="h-4 w-4" />
+                Export PDF
+              </Button>
+            </div>
+          )}
           <Table className="text-sm">
             <TableHeader>
               <TableRow className="bg-gray-50">
