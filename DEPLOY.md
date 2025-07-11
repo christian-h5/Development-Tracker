@@ -3,11 +3,20 @@
 ## Quick Deploy (Recommended)
 
 ### Option 1: Replit Deployments (Recommended)
+
+**If you're seeing a white screen, use this method instead:**
+
 1. Click the **"Deploy"** button in the top-right corner of Replit
-2. Choose **"Static"** as the deployment type
-3. Set the build command: `node build-static.js`
-4. Set the publish directory: `dist`
+2. Choose **"Autoscale"** as the deployment type (NOT Static)
+3. Set the build command: `npm install`
+4. Set the start command: `npm run dev`
 5. Click **"Deploy"**
+
+**For Static Deployment (if build completes):**
+1. Choose **"Static"** as the deployment type
+2. Set the build command: `node deploy-fix.js`
+3. Set the publish directory: `dist`
+4. Click **"Deploy"**
 
 Your app will be live at a `.replit.app` URL within minutes!
 
