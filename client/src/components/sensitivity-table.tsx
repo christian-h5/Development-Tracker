@@ -252,7 +252,7 @@ export default function SensitivityTable({
               {scenarios.map((scenario, index) => (
                 <TableRow key={index} className={`hover:bg-gray-50 transition-colors ${scenario.label === 'Base Case' ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}>
                   <TableCell className="py-4 px-6">
-                    <Badge className={`px-3 py-1 font-medium ${getBadgeColor(scenario.label)}`}>
+                    <Badge className="inline-flex items-center rounded-full border text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-primary/80 px-3 py-1 font-medium bg-blue-500 text-[#ffffff]">
                       {scenario.label}
                     </Badge>
                   </TableCell>
