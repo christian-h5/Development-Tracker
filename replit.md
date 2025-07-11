@@ -121,6 +121,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (January 2025)
 
+### Browser Local Storage Implementation
+- **Date**: January 11, 2025
+- **Change**: Replaced in-memory storage with browser localStorage for data persistence
+- **Impact**: 
+  - All project data, phases, and calculator configurations now persist between sessions
+  - Data is stored locally in the user's browser (no server dependency)
+  - Perfect for static deployment while maintaining full functionality
+  - Created client-side storage layer with localStorage service
+  - Updated API layer to use client storage instead of server calls
+  - Maintains all existing functionality with persistent data storage
+
 ### Calculator Unit Type Separation
 - **Date**: January 11, 2025
 - **Change**: Implemented independent unit type system for calculator functionality
@@ -131,5 +142,15 @@ Preferred communication style: Simple, everyday language.
   - Schema updated with new `calculatorUnitTypes` table and related types
   - Storage layer enhanced with calculator-specific CRUD operations
   - API endpoints added for calculator unit type management
+
+### UI/UX Improvements
+- **Date**: January 11, 2025
+- **Change**: Enhanced profitability analysis design and removed flex rooms from calculator
+- **Impact**:
+  - Removed flex rooms option from unit calculator for simplified interface
+  - Improved table design with better spacing, larger fonts, and color coding
+  - Added green color for profits (margins, ROI) and red for costs
+  - Enhanced table layout with full-width results section for better readability
+  - Added hover effects and highlighted base case scenarios
 
 The application prioritizes developer experience, type safety, and maintainable code structure while providing a responsive and intuitive user interface for real estate development project management.
