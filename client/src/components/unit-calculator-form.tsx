@@ -10,7 +10,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { calculateSalesCosts, calculateMargin, calculateProfitPerSqFt, calculateROI, formatCurrency } from "@/lib/calculations";
-import type { CalculatorUnitType, CalculatorScenario } from "@shared/schema";
+import type { CalculatorUnitType, CalculatorScenario, InsertCalculatorScenario } from "@shared/schema";
 
 interface ScenarioData {
   label: string;
@@ -218,6 +218,16 @@ export default function UnitCalculatorForm() {
   };
 
 
+
+  if (!calculatorUnitTypes) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center">Loading calculator unit types...</div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
