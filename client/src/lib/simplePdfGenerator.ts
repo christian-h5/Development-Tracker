@@ -206,31 +206,13 @@ export function generatePDFReport(options: PDFReportOptions): void {
 
     <div class="section">
         <div class="section-title">Executive Summary</div>
-        <div class="summary-grid">
-            <div class="summary-item">
-                <div class="summary-label">Unit Type:</div>
-                <div class="summary-value">${unitTypeName} (${squareFootage} sq ft)</div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-label">Base Case Sales Price:</div>
-                <div class="summary-value">${formatCurrency(baseScenario?.salesPrice || 0)}</div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-label">Base Case Net Profit:</div>
-                <div class="summary-value">${formatCurrency(baseScenario?.netProfit || 0)}</div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-label">Base Case Margin:</div>
-                <div class="summary-value">${formatPercent(baseScenario?.margin || 0)}</div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-label">Base Case ROI:</div>
-                <div class="summary-value">${formatPercent(baseScenario?.roi || 0)}</div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-label">Profit per Sq Ft:</div>
-                <div class="summary-value">${formatCurrency(baseScenario?.profitPerSqFt || 0)}</div>
-            </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; font-size: 12px;">
+            <div><strong>Unit Type:</strong> ${unitTypeName} (${squareFootage} sq ft)</div>
+            <div><strong>Base Sales Price:</strong> ${formatCurrency(baseScenario?.salesPrice || 0)}</div>
+            <div><strong>Base Net Profit:</strong> ${formatCurrency(baseScenario?.netProfit || 0)}</div>
+            <div><strong>Base Margin:</strong> ${formatPercent(baseScenario?.margin || 0)}</div>
+            <div><strong>Base ROI:</strong> ${formatPercent(baseScenario?.roi || 0)}</div>
+            <div><strong>Profit/Sq Ft:</strong> ${formatCurrency(baseScenario?.profitPerSqFt || 0)}</div>
         </div>
     </div>
 
@@ -280,35 +262,44 @@ export function generatePDFReport(options: PDFReportOptions): void {
                 </tr>
             </thead>
             <tbody>
-                ${scenarios.map(scenario => `
+                ${scenarios.map(scenario => {
+                    // Calculate per-unit costs from total costs and sales data
+                    const totalNonSalesCosts = scenario.totalCosts - scenario.salesCosts;
+                    const hardCosts = costBreakdown.hardCosts || (totalNonSalesCosts * 0.4);
+                    const softCosts = costBreakdown.softCosts || (totalNonSalesCosts * 0.25);
+                    const landCosts = costBreakdown.landCosts || (totalNonSalesCosts * 0.25);
+                    const financing = (costBreakdown.useConstructionFinancing && costBreakdown.constructionFinancing) || (totalNonSalesCosts * 0.1);
+                    
+                    return `
                     <tr style="${scenario.label === 'Base Case' ? 'background-color: #e3f2fd; font-weight: bold;' : ''}">
                         <td>${scenario.label}</td>
                         <td class="currency">${formatCurrency(scenario.salesPrice)}</td>
-                        <td class="currency">${formatCurrency(costBreakdown.hardCosts || 0)}</td>
-                        <td class="currency">${formatCurrency(costBreakdown.softCosts || 0)}</td>
-                        <td class="currency">${formatCurrency(costBreakdown.landCosts || 0)}</td>
+                        <td class="currency">${formatCurrency(hardCosts)}</td>
+                        <td class="currency">${formatCurrency(softCosts)}</td>
+                        <td class="currency">${formatCurrency(landCosts)}</td>
                         <td class="currency">${formatCurrency(scenario.salesCosts)}</td>
-                        <td class="currency">${formatCurrency((costBreakdown.useConstructionFinancing && costBreakdown.constructionFinancing) || 0)}</td>
+                        <td class="currency">${formatCurrency(financing)}</td>
                         <td class="currency" style="color: ${scenario.netProfit >= 0 ? '#27ae60' : '#e74c3c'};">${formatCurrency(scenario.netProfit)}</td>
                     </tr>
-                `).join('')}
+                    `;
+                }).join('')}
             </tbody>
         </table>
     </div>
 
     <div class="section">
         <div class="section-title">Risk Analysis</div>
-        <div class="risk-section">
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #2980b9;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
                 <div>
-                    <div style="margin-bottom: 10px; font-weight: normal;">Profit Range: ${formatCurrency(minProfit)} to ${formatCurrency(maxProfit)}</div>
-                    <div style="margin-bottom: 10px; font-weight: normal;">Average Margin: ${formatPercent(margins.reduce((a, b) => a + b, 0) / margins.length)}</div>
-                    <div style="margin-bottom: 10px; font-weight: normal;">Number of Scenarios: ${scenarios.length}</div>
+                    <div style="margin-bottom: 8px; font-size: 14px; color: #2c3e50;">Profit Range: ${formatCurrency(minProfit)} to ${formatCurrency(maxProfit)}</div>
+                    <div style="margin-bottom: 8px; font-size: 14px; color: #2c3e50;">Average Margin: ${formatPercent(margins.reduce((a, b) => a + b, 0) / margins.length)}</div>
+                    <div style="margin-bottom: 8px; font-size: 14px; color: #2c3e50;">Number of Scenarios: ${scenarios.length}</div>
                 </div>
                 <div>
-                    <div style="margin-bottom: 10px; font-weight: normal;">Break-even: ${scenarios.filter(s => s.netProfit >= 0).length}/${scenarios.length} profitable</div>
-                    <div style="margin-bottom: 10px; font-weight: normal;">Volatility: ${formatCurrency(maxProfit - minProfit)} spread</div>
-                    <div style="margin-bottom: 10px; font-weight: normal;">Risk: ${scenarios.filter(s => s.netProfit < 0).length > 0 ? 'Loss scenarios present' : 'All scenarios profitable'}</div>
+                    <div style="margin-bottom: 8px; font-size: 14px; color: #2c3e50;">Break-even: ${scenarios.filter(s => s.netProfit >= 0).length}/${scenarios.length} profitable</div>
+                    <div style="margin-bottom: 8px; font-size: 14px; color: #2c3e50;">Volatility: ${formatCurrency(maxProfit - minProfit)} spread</div>
+                    <div style="margin-bottom: 8px; font-size: 14px; color: #2c3e50;">Risk: ${scenarios.filter(s => s.netProfit < 0).length > 0 ? 'Loss scenarios present' : 'All scenarios profitable'}</div>
                 </div>
             </div>
         </div>
