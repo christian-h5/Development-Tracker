@@ -239,16 +239,24 @@ button[data-variant="ghost"]:hover {
 }
 
 .switch-root[data-state="checked"] {
-  background-color: hsl(var(--primary)) !important;
-  border-color: hsl(var(--primary)) !important;
+  background-color: #059669 !important;
+  border-color: #047857 !important;
+  box-shadow: 0 4px 14px 0 rgba(5, 150, 105, 0.3) !important;
+}
+
+.switch-root[data-state="unchecked"] {
+  background-color: #9ca3af !important;
+  border-color: #6b7280 !important;
 }
 
 .switch-thumb {
-  background-color: hsl(var(--background)) !important;
-  border: 1px solid hsl(var(--border)) !important;
-  transition: all 0.2s ease !important;
+  background-color: white !important;
+  border: 2px solid rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
 }
 
 .switch-root[data-state="checked"] .switch-thumb {
-  border-color: hsl(var(--primary-foreground)) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
 }
