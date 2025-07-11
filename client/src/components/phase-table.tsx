@@ -87,10 +87,10 @@ export default function PhaseTable({ phases, onEditPhase, onViewPhase, onDeleteP
         totalUnitSalesCosts += calculateSalesCosts(unitPrice);
       }
 
-      // Total phase costs = per-unit costs * quantity + individual sales costs
-      const phaseCosts = (perUnitHardCosts + perUnitSoftCosts + perUnitLandCosts + perUnitContingencyCosts + perUnitConstructionFinancing + perUnitLawyerFees) * unit.quantity + totalUnitSalesCosts;
+      // Total costs for this unit type = (per-unit costs * quantity) + total sales costs
+      const unitTypeCosts = (perUnitHardCosts + perUnitSoftCosts + perUnitLandCosts + perUnitContingencyCosts + perUnitConstructionFinancing + perUnitLawyerFees) * unit.quantity + totalUnitSalesCosts;
 
-      totalCosts += phaseCosts;
+      totalCosts += unitTypeCosts;
       totalRevenue += totalUnitRevenue;
     });
 

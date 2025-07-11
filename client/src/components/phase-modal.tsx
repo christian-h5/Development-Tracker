@@ -251,13 +251,19 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
       const savedPhase = await savePhaseMutation.mutateAsync(phaseData);
       const phaseId = isNew ? savedPhase.id : phase!.id;
 
+      // If editing existing phase, delete old phase units first
+      if (!isNew && phase?.units) {
+        for (const unit of phase.units) {
+          await apiRequest("DELETE", `/api/phase-units/${unit.id}`);
+        }
+      }
+
       // Then save all unit configurations
       for (const config of unitConfigs) {
         const unitType = getUnitType(config.unitTypeId);
         if (!unitType) continue;
 
         const unitData = {
-          id: config.id,
           phaseId,
           unitTypeId: config.unitTypeId,
           quantity: config.quantity,
@@ -280,7 +286,8 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
           individualPrices: JSON.stringify(config.individualPrices || []),
         };
 
-        await savePhaseUnitMutation.mutateAsync(unitData);
+        // Always create new phase units (we deleted old ones above)
+        await apiRequest("POST", "/api/phase-units", unitData);
       }
 
       onSave();
@@ -512,7 +519,7 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
                       />
                     </div>
 
-                    {/* Summary */}
+                    {/* Per Unit Summary */}
                     <div className="bg-gray-50 rounded-lg p-3 mt-4">
                       <h6 className="font-medium text-gray-900 mb-2">Cost Summary (Per Unit)</h6>
                       <div className="space-y-1 text-sm">
@@ -534,6 +541,27 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
                           <span className="font-medium">Margin:</span>
                           <span className={`font-semibold ${metrics.margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {metrics.margin.toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Phase Total Summary */}
+                    <div className="bg-blue-50 rounded-lg p-3 mt-2">
+                      <h6 className="font-medium text-blue-900 mb-2">Phase Total ({config.quantity} units)</h6>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span>Total Phase Costs:</span>
+                          <span className="font-medium text-blue-900">{formatCurrency(metrics.totalCosts * config.quantity)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Total Phase Revenue:</span>
+                          <span className="font-medium text-blue-900">{formatCurrency(metrics.totalRevenue * config.quantity)}</span>
+                        </div>
+                        <div className="flex justify-between border-t border-blue-300 pt-1">
+                          <span className="font-medium">Total Phase Profit:</span>
+                          <span className={`font-semibold ${(metrics.totalRevenue * config.quantity - metrics.totalCosts * config.quantity) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {formatCurrency(metrics.totalRevenue * config.quantity - metrics.totalCosts * config.quantity)}
                           </span>
                         </div>
                       </div>
