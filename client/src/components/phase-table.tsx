@@ -79,14 +79,29 @@ export default function PhaseTable({ phases, onEditPhase, onViewPhase, onDeleteP
         convertCostPerMethod(parseFloat(unit.constructionFinancing || "0"), unit.constructionFinancingInputMethod || 'perUnit', unitType.squareFootage) : 0;
       const perUnitLawyerFees = convertCostPerMethod(parseFloat(unit.lawyerFees || "0"), unit.lawyerFeesInputMethod || 'perUnit', unitType.squareFootage);
       
-      // Calculate per-unit sales costs based on individual prices or base price
+      // Calculate per-unit sales costs - only auto-calculate if user hasn't entered custom sales costs
       let totalUnitRevenue = 0;
       let totalUnitSalesCosts = 0;
       
       for (let i = 0; i < unit.quantity; i++) {
         const unitPrice = individualPrices[i] || baseSalesPrice;
         totalUnitRevenue += unitPrice;
-        totalUnitSalesCosts += calculateSalesCosts(unitPrice);
+      }
+
+      // Check if user has entered custom sales costs
+      const userSalesCosts = parseFloat(unit.salesCosts || "0");
+      if (userSalesCosts > 0) {
+        // User has entered custom sales costs - use those
+        const perUnitSalesCosts = convertCostPerMethod(userSalesCosts, unit.salesCostsInputMethod || 'perUnit', unitType.squareFootage);
+        totalUnitSalesCosts = perUnitSalesCosts * unit.quantity;
+      } else if (totalUnitRevenue > 0) {
+        // User hasn't entered sales costs but has revenue - auto-calculate commission
+        for (let i = 0; i < unit.quantity; i++) {
+          const unitPrice = individualPrices[i] || baseSalesPrice;
+          if (unitPrice > 0) {
+            totalUnitSalesCosts += calculateSalesCosts(unitPrice);
+          }
+        }
       }
 
       // Total costs for this unit type = (per-unit costs * quantity) + total sales costs

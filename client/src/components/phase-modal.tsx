@@ -54,6 +54,8 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
   const [phaseStatus, setPhaseStatus] = useState(phase?.status || "future");
   const [totalSquareFootage, setTotalSquareFootage] = useState(phase?.totalSquareFootage?.toString() || "");
   const [unitConfigs, setUnitConfigs] = useState<UnitConfig[]>([]);
+  const [tier1Rate, setTier1Rate] = useState(5);
+  const [tier2Rate, setTier2Rate] = useState(3);
 
   const { data: unitTypes = [] } = useQuery<UnitType[]>({
     queryKey: ["/api/unit-types"],
@@ -211,12 +213,19 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
     const totalRevenue = individualPrices.reduce((sum, price) => sum + (price || 0), 0);
     const averageSalesPrice = totalRevenue / Math.max(config.quantity, 1);
     
-    // Calculate average sales costs per unit based on individual prices
-    const totalSalesCosts = individualPrices.reduce((sum, price) => {
-      const unitPrice = price || 0;
-      return sum + calculateSalesCosts(unitPrice);
-    }, 0);
-    const averageSalesCosts = totalSalesCosts / Math.max(config.quantity, 1);
+    // Calculate average sales costs per unit - only auto-calculate if user hasn't entered custom sales costs AND there's a sales price
+    let averageSalesCosts = 0;
+    if (config.salesCosts > 0) {
+      // User has entered custom sales costs - use those
+      averageSalesCosts = convertCostPerMethod(config.salesCosts, config.salesCostsInputMethod, unitType.squareFootage);
+    } else if (averageSalesPrice > 0) {
+      // User hasn't entered sales costs but has sales price - auto-calculate commission based on individual prices
+      const totalSalesCosts = individualPrices.reduce((sum, price) => {
+        const unitPrice = price || 0;
+        return unitPrice > 0 ? sum + calculateSalesCosts(unitPrice) : sum;
+      }, 0);
+      averageSalesCosts = totalSalesCosts / Math.max(config.quantity, 1);
+    }
 
     // PER UNIT totals (what's displayed in Cost Summary Per Unit)
     const perUnitCosts = perUnitHardCosts + perUnitSoftCosts + perUnitLandCosts + perUnitContingencyCosts + averageSalesCosts + perUnitLawyerFees + perUnitConstructionFinancing;
@@ -501,9 +510,12 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
                         salesPrice={config.salesPrice}
                         lawyerFees={config.lawyerFees.toString()}
                         onLawyerFeesChange={(value) => updateUnitConfig(index, 'lawyerFees', parseFloat(value) || 0)}
-                        tier1Rate={5}
-                        tier2Rate={3}
-                        onTierRateChange={() => {}}
+                        tier1Rate={tier1Rate}
+                        tier2Rate={tier2Rate}
+                        onTierRateChange={(tier, rate) => {
+                          if (tier === 1) setTier1Rate(rate);
+                          if (tier === 2) setTier2Rate(rate);
+                        }}
                       />
 
                       <CostInputToggle
