@@ -175,7 +175,7 @@ export default function FuturePhaseDefaultsComponent({ projectId }: FuturePhaseD
           <Switch
             checked={isEnabled}
             onCheckedChange={setIsEnabled}
-            className="text-[#302d75]"
+            className="data-[state=checked]:bg-[#302d75] data-[state=unchecked]:bg-gray-300 border-2 border-gray-400 data-[state=checked]:border-[#302d75] scale-110"
           />
           <Label>Apply these defaults to new future phases</Label>
         </div>
