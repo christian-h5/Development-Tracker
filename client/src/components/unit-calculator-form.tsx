@@ -126,9 +126,19 @@ export default function UnitCalculatorForm() {
       setLawyerFeesInputMethod(savedScenario.lawyerFeesInputMethod as 'perUnit' | 'perSqFt');
       setConstructionFinancingInputMethod(savedScenario.constructionFinancingInputMethod as 'perUnit' | 'perSqFt');
       setScenario1Price(savedScenario.scenario1Price || "");
-      setScenario2Price(savedScenario.scenario2Price || "");
-      setScenario3Price(savedScenario.scenario3Price || "");
-      setScenario4Price(savedScenario.scenario4Price || "");
+      // Load additional scenarios if they exist in saved data
+      const additionalScenariosFromSaved = [];
+      if ((savedScenario as any).scenario2Price) {
+        additionalScenariosFromSaved.push({ id: 2, label: "Scenario 1", price: (savedScenario as any).scenario2Price });
+      }
+      if ((savedScenario as any).scenario3Price) {
+        additionalScenariosFromSaved.push({ id: 3, label: "Scenario 2", price: (savedScenario as any).scenario3Price });
+      }
+      if ((savedScenario as any).scenario4Price) {
+        additionalScenariosFromSaved.push({ id: 4, label: "Scenario 3", price: (savedScenario as any).scenario4Price });
+      }
+      setAdditionalScenarios(additionalScenariosFromSaved);
+      setNextScenarioId(Math.max(5, ...additionalScenariosFromSaved.map(s => s.id + 1)));
     }
   }, [savedScenario]);
 
@@ -243,9 +253,9 @@ export default function UnitCalculatorForm() {
       lawyerFeesInputMethod: lawyerFeesInputMethod,
       constructionFinancingInputMethod: constructionFinancingInputMethod,
       scenario1Price: scenario1Price || null,
-      scenario2Price: scenario2Price || null,
-      scenario3Price: scenario3Price || null,
-      scenario4Price: scenario4Price || null,
+      scenario2Price: additionalScenarios.find(s => s.id === 2)?.price || null,
+      scenario3Price: additionalScenarios.find(s => s.id === 3)?.price || null,
+      scenario4Price: additionalScenarios.find(s => s.id === 4)?.price || null,
     };
 
     await saveScenarioMutation.mutateAsync(data);
