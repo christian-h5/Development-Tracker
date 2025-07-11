@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Edit, Eye, Plus } from "lucide-react";
+import { Edit, Eye, Plus, Trash2 } from "lucide-react";
 import { formatCurrency, formatPercent, calculateSalesCosts, calculateNetProfit, calculateMargin } from "@/lib/calculations";
 import type { PhaseWithUnits } from "@shared/schema";
 
@@ -10,9 +10,11 @@ interface PhaseTableProps {
   phases: PhaseWithUnits[];
   onEditPhase: (phase: PhaseWithUnits) => void;
   onViewPhase: (phase: PhaseWithUnits) => void;
+  onDeletePhase: (phase: PhaseWithUnits) => void;
+  onAddPhase: () => void;
 }
 
-export default function PhaseTable({ phases, onEditPhase, onViewPhase, onAddPhase }: PhaseTableProps) {
+export default function PhaseTable({ phases, onEditPhase, onViewPhase, onDeletePhase, onAddPhase }: PhaseTableProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -180,6 +182,14 @@ export default function PhaseTable({ phases, onEditPhase, onViewPhase, onAddPhas
                         className="hover:bg-gray-50 hover:text-gray-600"
                       >
                         <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => onDeletePhase(phase)}
+                        className="hover:bg-red-50 hover:text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                       </div>
                     </TableCell>

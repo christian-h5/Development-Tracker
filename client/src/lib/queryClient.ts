@@ -23,9 +23,14 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    // Use client-side storage instead of HTTP requests
-    const url = queryKey.join("/") as string;
-    return await handleClientApiRequest('GET', url);
+    try {
+      // Use client-side storage instead of HTTP requests
+      const url = queryKey.join("/") as string;
+      return await handleClientApiRequest('GET', url);
+    } catch (error) {
+      console.error('Query error:', error, 'QueryKey:', queryKey);
+      throw error;
+    }
   };
 
 export const queryClient = new QueryClient({

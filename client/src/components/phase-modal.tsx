@@ -230,8 +230,7 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
         totalSquareFootage: totalSquareFootage ? parseInt(totalSquareFootage) : null,
       };
 
-      const phaseResponse = await savePhaseMutation.mutateAsync(phaseData);
-      const savedPhase = await phaseResponse.json();
+      const savedPhase = await savePhaseMutation.mutateAsync(phaseData);
       const phaseId = isNew ? savedPhase.id : phase!.id;
 
       // Then save all unit configurations

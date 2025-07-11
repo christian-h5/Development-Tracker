@@ -7,6 +7,10 @@ import NavigationHeader from "@/components/navigation-header";
 import ProjectTracking from "@/pages/project-tracking";
 import UnitCalculator from "@/pages/unit-calculator";
 import NotFound from "@/pages/not-found";
+import { localStorage as clientStorage } from "./lib/localStorage";
+
+// Initialize localStorage service with sample data
+clientStorage.initializeWithSampleData();
 
 function Router() {
   return (

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,8 +12,11 @@ import ProjectEditModal from "@/components/project-edit-modal";
 import type { PhaseWithUnits, Project } from "@shared/schema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import FuturePhaseDefaultsComponent from "@/components/future-phase-defaults";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function ProjectTracking() {
+  const { toast } = useToast();
   const [selectedPhase, setSelectedPhase] = useState<PhaseWithUnits | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNewPhase, setIsNewPhase] = useState(false);
@@ -71,6 +74,26 @@ export default function ProjectTracking() {
     setIsProjectModalOpen(false);
     setEditingProject(null);
     setIsNewProject(false);
+  };
+
+  const deletePhaseMutation = useMutation({
+    mutationFn: async (phaseId: number) => {
+      return apiRequest("DELETE", `/api/phases/${phaseId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects", selectedProjectId, "phases"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects", selectedProjectId, "summary"] });
+      toast({ title: "Phase deleted successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to delete phase", variant: "destructive" });
+    },
+  });
+
+  const handleDeletePhase = (phase: PhaseWithUnits) => {
+    if (confirm(`Are you sure you want to delete "${phase.name}"? This action cannot be undone.`)) {
+      deletePhaseMutation.mutate(phase.id);
+    }
   };
 
   return (
@@ -148,7 +171,7 @@ export default function ProjectTracking() {
         </TabsList>
 
         <TabsContent value="dashboard">
-          <ProjectDashboard projectId={selectedProjectId} onAddPhase={handleAddPhase} />
+          <ProjectDashboard projectId={selectedProjectId} />
         </TabsContent>
 
         <TabsContent value="phases">
@@ -156,6 +179,7 @@ export default function ProjectTracking() {
             phases={phases} 
             onEditPhase={handleEditPhase}
             onViewPhase={(phase) => console.log('View phase:', phase)}
+            onDeletePhase={handleDeletePhase}
             onAddPhase={handleAddPhase}
           />
         </TabsContent>

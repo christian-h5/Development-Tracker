@@ -9,10 +9,9 @@ import type { ProjectSummary, PhaseWithUnits, UnitType } from "@shared/schema";
 
 interface ProjectDashboardProps {
   projectId: number;
-  onAddPhase: () => void;
 }
 
-export default function ProjectDashboard({ projectId, onAddPhase }: ProjectDashboardProps) {
+export default function ProjectDashboard({ projectId }: ProjectDashboardProps) {
   const { toast } = useToast();
   
   const { data: project } = useQuery({
@@ -100,13 +99,7 @@ export default function ProjectDashboard({ projectId, onAddPhase }: ProjectDashb
                 <FileDown className="h-4 w-4" />
                 Export PDF
               </Button>
-              <Button 
-                onClick={onAddPhase}
-                className="bg-primary hover:bg-primary/90"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add Phase
-              </Button>
+
             </div>
           </div>
 

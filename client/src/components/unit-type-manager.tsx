@@ -50,7 +50,7 @@ export default function UnitTypeManager() {
       setSquareFootage(unitType.squareFootage.toString());
       setBedrooms(unitType.bedrooms.toString());
       setLockOffFlexRooms(unitType.lockOffFlexRooms.toString());
-      setTotalUnitsInDevelopment(unitType.totalUnitsInDevelopment.toString());
+      setTotalUnitsInDevelopment((unitType.totalUnitsInDevelopment || 0).toString());
     } else {
       setEditingUnitType(null);
       setName("");
