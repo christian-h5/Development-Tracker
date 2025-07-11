@@ -62,16 +62,24 @@ export default function UnitCalculatorForm() {
 
   // Helper functions for managing scenarios
   const addScenario = () => {
+    const currentCount = additionalScenarios.length;
     setAdditionalScenarios(prev => [...prev, {
       id: nextScenarioId,
-      label: `Scenario ${nextScenarioId - 1}`,
+      label: `Scenario ${currentCount + 1}`,
       price: ""
     }]);
     setNextScenarioId(prev => prev + 1);
   };
 
   const removeScenario = (id: number) => {
-    setAdditionalScenarios(prev => prev.filter(scenario => scenario.id !== id));
+    setAdditionalScenarios(prev => {
+      const filtered = prev.filter(scenario => scenario.id !== id);
+      // Re-label scenarios to maintain sequential numbering
+      return filtered.map((scenario, index) => ({
+        ...scenario,
+        label: `Scenario ${index + 1}`
+      }));
+    });
   };
 
   const updateScenarioPrice = (id: number, price: string) => {
@@ -199,7 +207,8 @@ export default function UnitCalculatorForm() {
         label: scenario.label,
         price: parseFloat(scenario.price) || 0
       }))
-    ].filter(s => s.price > 0);
+    ].filter(s => s.price > 0)
+    .sort((a, b) => a.price - b.price); // Sort by price ascending
 
     const calculated = scenarios.map(scenario => {
       // Use manual sales costs if provided, otherwise calculate tiered commission
@@ -488,6 +497,14 @@ export default function UnitCalculatorForm() {
               unitTypeName={selectedUnitType?.name || "Unit Type"}
               squareFootage={parseFloat(squareFootage) || 0}
               projectName="Unit Calculator Analysis"
+              costBreakdown={{
+                hardCosts: hardCost,
+                softCosts: softCost,
+                landCosts: landCost,
+                contingencyCosts: contingencyCost,
+                constructionFinancing: constructionCost,
+                useConstructionFinancing: useConstructionFinancing
+              }}
             />
           </div>
         )}

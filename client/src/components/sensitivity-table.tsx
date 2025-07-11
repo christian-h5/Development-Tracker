@@ -30,6 +30,14 @@ interface SensitivityTableProps {
   unitTypeName?: string;
   squareFootage?: number;
   projectName?: string;
+  costBreakdown?: {
+    hardCosts?: number;
+    softCosts?: number;
+    landCosts?: number;
+    contingencyCosts?: number;
+    constructionFinancing?: number;
+    useConstructionFinancing?: boolean;
+  };
 }
 
 
@@ -40,7 +48,8 @@ export default function SensitivityTable({
   onGenerateSensitivity,
   unitTypeName = "Unit Type",
   squareFootage = 0,
-  projectName = "Unit Calculator"
+  projectName = "Unit Calculator",
+  costBreakdown
 }: SensitivityTableProps) {
   const [sensitivityType, setSensitivityType] = useState<'percentage' | 'dollar'>('percentage');
   const [sensitivityValue, setSensitivityValue] = useState('10');
@@ -214,7 +223,8 @@ export default function SensitivityTable({
                   unitTypeName,
                   squareFootage,
                   scenarios,
-                  analysisDate: new Date()
+                  analysisDate: new Date(),
+                  costBreakdown
                 })}
                 variant="outline"
                 size="sm"

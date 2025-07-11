@@ -31,6 +31,14 @@ interface PDFExportOptions {
   squareFootage?: number;
   scenarios: ScenarioData[];
   analysisDate?: Date;
+  costBreakdown?: {
+    hardCosts?: number;
+    softCosts?: number;
+    landCosts?: number;
+    contingencyCosts?: number;
+    constructionFinancing?: number;
+    useConstructionFinancing?: boolean;
+  };
 }
 
 export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void {
@@ -165,7 +173,7 @@ export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void 
     theme: 'striped',
     headStyles: {
       fillColor: [41, 128, 185],
-      textColor: 255,
+      textColor: [255, 255, 255],
       fontStyle: 'bold'
     },
     bodyStyles: {
@@ -206,43 +214,85 @@ export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void 
   doc.addPage();
   currentY = margin;
   
-  // Detailed Analysis Table
+  // Detailed Cost Analysis Table
   doc.setFont('helvetica', 'bold');
   doc.text('Detailed Cost Analysis', margin, currentY);
   currentY += 10;
   
-  // Prepare detailed table data
-  const tableHeaders = [
-    'Scenario',
-    'Sales Price',
-    'Sales Costs',
-    'Total Costs',
-    'Net Profit',
-    'Margin %',
-    'ROI %',
-    'Profit/SqFt'
-  ];
+  // Use dynamic headers based on available cost data
   
-  const tableData = scenarios.map(scenario => [
-    scenario.label,
-    formatCurrency(scenario.salesPrice),
-    formatCurrency(scenario.salesCosts),
-    formatCurrency(scenario.totalCosts),
-    formatCurrency(scenario.netProfit),
-    formatPercent(scenario.margin),
-    formatPercent(scenario.roi),
-    formatCurrency(scenario.profitPerSqFt)
-  ]);
+  const { costBreakdown } = options;
   
-  // Generate table
+  // Filter out columns that have no data
+  const availableCosts = [];
+  const dynamicHeaders = ['Scenario', 'Sales Price'];
+  
+  if (costBreakdown?.hardCosts && costBreakdown.hardCosts > 0) {
+    availableCosts.push('hardCosts');
+    dynamicHeaders.push('Hard Costs');
+  }
+  if (costBreakdown?.softCosts && costBreakdown.softCosts > 0) {
+    availableCosts.push('softCosts');
+    dynamicHeaders.push('Soft Costs');
+  }
+  if (costBreakdown?.landCosts && costBreakdown.landCosts > 0) {
+    availableCosts.push('landCosts');
+    dynamicHeaders.push('Land Costs');
+  }
+  
+  dynamicHeaders.push('Sales Costs'); // Always include sales costs
+  
+  if (costBreakdown?.contingencyCosts && costBreakdown.contingencyCosts > 0) {
+    availableCosts.push('contingencyCosts');
+    dynamicHeaders.push('Contingency');
+  }
+  if (costBreakdown?.constructionFinancing && costBreakdown.constructionFinancing > 0 && costBreakdown.useConstructionFinancing) {
+    availableCosts.push('constructionFinancing');
+    dynamicHeaders.push('Construction Financing');
+  }
+  
+  dynamicHeaders.push('Net Profit');
+  
+  const detailedData = scenarios.map(scenario => {
+    const row = [
+      scenario.label,
+      formatCurrency(scenario.salesPrice)
+    ];
+    
+    // Add cost columns based on what's available
+    if (availableCosts.includes('hardCosts')) {
+      row.push(formatCurrency(costBreakdown?.hardCosts || 0));
+    }
+    if (availableCosts.includes('softCosts')) {
+      row.push(formatCurrency(costBreakdown?.softCosts || 0));
+    }
+    if (availableCosts.includes('landCosts')) {
+      row.push(formatCurrency(costBreakdown?.landCosts || 0));
+    }
+    
+    row.push(formatCurrency(scenario.salesCosts)); // Always include sales costs
+    
+    if (availableCosts.includes('contingencyCosts')) {
+      row.push(formatCurrency(costBreakdown?.contingencyCosts || 0));
+    }
+    if (availableCosts.includes('constructionFinancing')) {
+      row.push(formatCurrency(costBreakdown?.constructionFinancing || 0));
+    }
+    
+    row.push(formatCurrency(scenario.netProfit));
+    
+    return row;
+  });
+  
+  // Generate detailed table
   autoTable(doc, {
-    head: [tableHeaders],
-    body: tableData,
+    head: [dynamicHeaders],
+    body: detailedData,
     startY: currentY,
     theme: 'striped',
     headStyles: {
       fillColor: [41, 128, 185],
-      textColor: 255,
+      textColor: [255, 255, 255],
       fontStyle: 'bold'
     },
     bodyStyles: {
@@ -251,50 +301,48 @@ export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void 
     alternateRowStyles: {
       fillColor: [245, 245, 245]
     },
-    columnStyles: {
-      0: { fontStyle: 'bold', halign: 'left' },
-      1: { halign: 'right' },
-      2: { halign: 'right' }, // Keep costs black
-      3: { halign: 'right' }, // Keep costs black
-      4: { halign: 'right' }, // Profit - will be colored based on value
-      5: { halign: 'right' }, // Margin - will be colored based on value
-      6: { halign: 'right' }, // ROI - will be colored based on value
-      7: { halign: 'right' }  // Profit/sqft - will be colored based on value
-    },
+    columnStyles: dynamicHeaders.reduce((acc, header, index) => {
+      if (index === 0) {
+        acc[index] = { fontStyle: 'bold', halign: 'left' };
+      } else {
+        acc[index] = { halign: 'right' };
+      }
+      return acc;
+    }, {} as any),
     didParseCell: function(data) {
       // Highlight base case row
-      if (data.row.index !== undefined && tableData[data.row.index] && tableData[data.row.index][0] === 'Base Case') {
+      if (data.row.index !== undefined && detailedData[data.row.index] && detailedData[data.row.index][0] === 'Base Case') {
         data.cell.styles.fillColor = [173, 216, 230]; // Light blue
         data.cell.styles.fontStyle = 'bold';
       }
       
-      // Color profits based on positive/negative values
-      if (data.column.index >= 4) { // Net Profit, Margin, ROI, $/SqFt columns
+      // Color the Net Profit column (last column)
+      if (data.column.index === dynamicHeaders.length - 1) {
         const cellText = data.cell.text[0];
         if (cellText && cellText.includes('-')) {
           data.cell.styles.textColor = [231, 76, 60]; // Red for negative
-        } else if (cellText && (cellText.includes('$') || cellText.includes('%'))) {
+        } else if (cellText && cellText.includes('$')) {
           data.cell.styles.textColor = [46, 125, 50]; // Green for positive
         }
       }
     }
   });
   
-  // Add risk analysis section
-  const finalY = (doc as any).lastAutoTable.finalY;
+  // Add risk analysis section in two columns on first page
+  const summaryFinalY = (doc as any).lastAutoTable.finalY;
   const pageHeight = doc.internal.pageSize.height;
   
-  if (finalY < pageHeight - 120) {
-    let riskY = finalY + 20;
+  if (summaryFinalY < pageHeight - 100) {
+    let riskY = summaryFinalY + 20;
     
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0);
     doc.text('Risk Analysis', margin, riskY);
-    riskY += 10;
+    riskY += 15;
     
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     
     // Calculate risk metrics
     const profits = scenarios.map(s => s.netProfit);
@@ -303,19 +351,32 @@ export function exportSensitivityAnalysisToPDF(options: PDFExportOptions): void 
     const maxProfit = Math.max(...profits);
     const avgMargin = margins.reduce((a, b) => a + b, 0) / margins.length;
     
-    const riskLines = [
+    const leftColumnLines = [
       `Profit Range: ${formatCurrency(minProfit)} to ${formatCurrency(maxProfit)}`,
       `Average Margin: ${formatPercent(avgMargin)}`,
-      `Number of Scenarios Analyzed: ${scenarios.length}`,
-      `Break-even Analysis: ${scenarios.filter(s => s.netProfit >= 0).length} of ${scenarios.length} scenarios profitable`,
-      `Volatility: ${formatCurrency(maxProfit - minProfit)} spread between best/worst case`,
-      `Downside Risk: ${scenarios.filter(s => s.netProfit < 0).length > 0 ? 'Loss scenarios present' : 'All scenarios profitable'}`
+      `Number of Scenarios: ${scenarios.length}`
     ];
     
-    riskLines.forEach(line => {
-      if (riskY < pageHeight - 25) {
-        doc.text(line, margin, riskY);
-        riskY += 7;
+    const rightColumnLines = [
+      `Break-even: ${scenarios.filter(s => s.netProfit >= 0).length}/${scenarios.length} profitable`,
+      `Volatility: ${formatCurrency(maxProfit - minProfit)} spread`,
+      `Risk: ${scenarios.filter(s => s.netProfit < 0).length > 0 ? 'Loss scenarios present' : 'All scenarios profitable'}`
+    ];
+    
+    const columnWidth = (pageWidth - 2 * margin) / 2;
+    const rightColumnX = margin + columnWidth + 10;
+    
+    // Left column
+    leftColumnLines.forEach((line, index) => {
+      if (riskY + (index * 6) < pageHeight - 25) {
+        doc.text(line, margin, riskY + (index * 6));
+      }
+    });
+    
+    // Right column
+    rightColumnLines.forEach((line, index) => {
+      if (riskY + (index * 6) < pageHeight - 25) {
+        doc.text(line, rightColumnX, riskY + (index * 6));
       }
     });
   }
