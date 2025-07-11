@@ -34,6 +34,8 @@ export default function UnitCalculatorForm() {
   const [salesCosts, setSalesCosts] = useState("");
   const [contingencyCosts, setContingencyCosts] = useState("");
   const [lawyerFees, setLawyerFees] = useState("");
+  const [constructionFinancing, setConstructionFinancing] = useState("");
+  const [useConstructionFinancing, setUseConstructionFinancing] = useState(false);
 
   // Input method states
   const [hardCostsInputMethod, setHardCostsInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
@@ -42,6 +44,7 @@ export default function UnitCalculatorForm() {
   const [contingencyCostsInputMethod, setContingencyCostsInputMethod] = useState<'perUnit' | 'perSqFt' | 'percentage'>('perUnit');
   const [salesCostsInputMethod, setSalesCostsInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
   const [lawyerFeesInputMethod, setLawyerFeesInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
+  const [constructionFinancingInputMethod, setConstructionFinancingInputMethod] = useState<'perUnit' | 'perSqFt'>('perUnit');
 
   // Commission tier rates
   const [tier1Rate, setTier1Rate] = useState(5);
@@ -91,12 +94,15 @@ export default function UnitCalculatorForm() {
       setContingencyCosts(savedScenario.contingencyCosts || "");
       setSalesCosts(savedScenario.salesCosts || "");
       setLawyerFees(savedScenario.lawyerFees || "");
+      setConstructionFinancing(savedScenario.constructionFinancing || "");
+      setUseConstructionFinancing(savedScenario.useConstructionFinancing || false);
       setHardCostsInputMethod(savedScenario.hardCostsInputMethod as 'perUnit' | 'perSqFt');
       setSoftCostsInputMethod(savedScenario.softCostsInputMethod as 'perUnit' | 'perSqFt');
       setLandCostsInputMethod(savedScenario.landCostsInputMethod as 'perUnit' | 'perSqFt');
       setContingencyCostsInputMethod(savedScenario.contingencyCostsInputMethod as 'perUnit' | 'perSqFt' | 'percentage');
       setSalesCostsInputMethod(savedScenario.salesCostsInputMethod as 'perUnit' | 'perSqFt');
       setLawyerFeesInputMethod(savedScenario.lawyerFeesInputMethod as 'perUnit' | 'perSqFt');
+      setConstructionFinancingInputMethod(savedScenario.constructionFinancingInputMethod as 'perUnit' | 'perSqFt');
       setScenario1Price(savedScenario.scenario1Price || "");
       setScenario2Price(savedScenario.scenario2Price || "");
       setScenario3Price(savedScenario.scenario3Price || "");
@@ -132,6 +138,7 @@ export default function UnitCalculatorForm() {
     const land = convertCostPerMethod(parseFloat(landCosts) || 0, landCostsInputMethod, sqFt);
     const contingency = convertCostPerMethod(parseFloat(contingencyCosts) || 0, contingencyCostsInputMethod, sqFt);
     const lawyer = convertCostPerMethod(parseFloat(lawyerFees) || 0, lawyerFeesInputMethod, sqFt);
+    const construction = useConstructionFinancing ? convertCostPerMethod(parseFloat(constructionFinancing) || 0, constructionFinancingInputMethod, sqFt) : 0;
 
     // Use manual sales costs if provided, otherwise calculate tiered commission based on base case price
     let sales = convertCostPerMethod(parseFloat(salesCosts) || 0, salesCostsInputMethod, sqFt);
@@ -142,7 +149,7 @@ export default function UnitCalculatorForm() {
       }
     }
 
-    return hard + soft + land + contingency + sales + lawyer;
+    return hard + soft + land + contingency + sales + lawyer + construction;
   };
 
   const calculateScenarios = () => {
@@ -152,6 +159,7 @@ export default function UnitCalculatorForm() {
     const landCost = convertCostPerMethod(parseFloat(landCosts) || 0, landCostsInputMethod, sqFt);
     const contingencyCost = convertCostPerMethod(parseFloat(contingencyCosts) || 0, contingencyCostsInputMethod, sqFt);
     const lawyerFee = convertCostPerMethod(parseFloat(lawyerFees) || 0, lawyerFeesInputMethod, sqFt);
+    const constructionCost = useConstructionFinancing ? convertCostPerMethod(parseFloat(constructionFinancing) || 0, constructionFinancingInputMethod, sqFt) : 0;
 
     const scenarios = [
       { label: "Base Case", price: parseFloat(scenario1Price) || 0 },
@@ -167,7 +175,7 @@ export default function UnitCalculatorForm() {
         salesCost = calculateSalesCosts(scenario.price);
       }
 
-      const totalCosts = hardCost + softCost + landCost + contingencyCost + salesCost + lawyerFee;
+      const totalCosts = hardCost + softCost + landCost + contingencyCost + salesCost + lawyerFee + constructionCost;
       const netProfit = scenario.price - totalCosts;
       const margin = calculateMargin(netProfit, scenario.price);
       const profitPerSqFt = calculateProfitPerSqFt(netProfit, sqFt);
@@ -202,12 +210,15 @@ export default function UnitCalculatorForm() {
       contingencyCosts: contingencyCosts,
       salesCosts: salesCosts,
       lawyerFees: lawyerFees,
+      constructionFinancing: constructionFinancing,
+      useConstructionFinancing: useConstructionFinancing,
       hardCostsInputMethod: hardCostsInputMethod,
       softCostsInputMethod: softCostsInputMethod,
       landCostsInputMethod: landCostsInputMethod,
       contingencyCostsInputMethod: contingencyCostsInputMethod,
       salesCostsInputMethod: salesCostsInputMethod,
       lawyerFeesInputMethod: lawyerFeesInputMethod,
+      constructionFinancingInputMethod: constructionFinancingInputMethod,
       scenario1Price: scenario1Price || null,
       scenario2Price: scenario2Price || null,
       scenario3Price: scenario3Price || null,
@@ -336,6 +347,18 @@ export default function UnitCalculatorForm() {
                 squareFootage={parseFloat(squareFootage) || 1}
                 isContingency={true}
                 totalCosts={calculateBaseCosts()}
+              />
+
+              <CostInputToggle
+                label="Construction Financing"
+                value={constructionFinancing}
+                onChange={setConstructionFinancing}
+                inputMethod={constructionFinancingInputMethod}
+                onToggleMethod={setConstructionFinancingInputMethod}
+                squareFootage={parseFloat(squareFootage) || 1}
+                isConstructionFinancing={true}
+                useConstructionFinancing={useConstructionFinancing}
+                onToggleConstructionFinancing={setUseConstructionFinancing}
               />
             </div>
 
