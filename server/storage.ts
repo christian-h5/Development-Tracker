@@ -257,12 +257,15 @@ export class MemStorage implements IStorage {
       contingencyCosts: insertPhaseUnit.contingencyCosts || null,
       salesCosts: insertPhaseUnit.salesCosts || null,
       lawyerFees: insertPhaseUnit.lawyerFees || null,
+      constructionFinancing: insertPhaseUnit.constructionFinancing || "0",
+      useConstructionFinancing: insertPhaseUnit.useConstructionFinancing || false,
       hardCostsInputMethod: insertPhaseUnit.hardCostsInputMethod || 'perUnit',
       softCostsInputMethod: insertPhaseUnit.softCostsInputMethod || 'perUnit',
       landCostsInputMethod: insertPhaseUnit.landCostsInputMethod || 'perUnit',
       contingencyCostsInputMethod: insertPhaseUnit.contingencyCostsInputMethod || 'perUnit',
       salesCostsInputMethod: insertPhaseUnit.salesCostsInputMethod || 'perUnit',
-      lawyerFeesInputMethod: insertPhaseUnit.lawyerFeesInputMethod || 'perUnit'
+      lawyerFeesInputMethod: insertPhaseUnit.lawyerFeesInputMethod || 'perUnit',
+      constructionFinancingInputMethod: insertPhaseUnit.constructionFinancingInputMethod || 'perUnit'
     };
     this.phaseUnits.set(phaseUnit.id, phaseUnit);
     return phaseUnit;
@@ -307,12 +310,15 @@ export class MemStorage implements IStorage {
       const scenario: CalculatorScenario = { 
         ...insertScenario, 
         id: this.currentScenarioId++,
+        constructionFinancing: insertScenario.constructionFinancing || "0",
+        useConstructionFinancing: insertScenario.useConstructionFinancing || false,
         hardCostsInputMethod: insertScenario.hardCostsInputMethod || 'perUnit',
         softCostsInputMethod: insertScenario.softCostsInputMethod || 'perUnit',
         landCostsInputMethod: insertScenario.landCostsInputMethod || 'perUnit',
         contingencyCostsInputMethod: insertScenario.contingencyCostsInputMethod || 'perUnit',
         salesCostsInputMethod: insertScenario.salesCostsInputMethod || 'perUnit',
         lawyerFeesInputMethod: insertScenario.lawyerFeesInputMethod || 'perUnit',
+        constructionFinancingInputMethod: insertScenario.constructionFinancingInputMethod || 'perUnit',
         scenario1Price: insertScenario.scenario1Price || null,
         scenario2Price: insertScenario.scenario2Price || null,
         scenario3Price: insertScenario.scenario3Price || null,
@@ -345,12 +351,15 @@ export class MemStorage implements IStorage {
         contingencyCosts: insertDefaults.contingencyCosts || null,
         salesCosts: insertDefaults.salesCosts || null,
         lawyerFees: insertDefaults.lawyerFees || null,
+        constructionFinancing: insertDefaults.constructionFinancing || "0",
+        useConstructionFinancing: insertDefaults.useConstructionFinancing || false,
         hardCostsInputMethod: insertDefaults.hardCostsInputMethod || 'perUnit',
         softCostsInputMethod: insertDefaults.softCostsInputMethod || 'perUnit',
         landCostsInputMethod: insertDefaults.landCostsInputMethod || 'perUnit',
         contingencyCostsInputMethod: insertDefaults.contingencyCostsInputMethod || 'perUnit',
         salesCostsInputMethod: insertDefaults.salesCostsInputMethod || 'perUnit',
         lawyerFeesInputMethod: insertDefaults.lawyerFeesInputMethod || 'perUnit',
+        constructionFinancingInputMethod: insertDefaults.constructionFinancingInputMethod || 'perUnit',
         isActive: insertDefaults.isActive || false
       };
       this.futurePhaseDefaults.set(defaults.id, defaults);

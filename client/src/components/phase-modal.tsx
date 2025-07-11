@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Building2 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { PhaseWithUnits, UnitType } from "@shared/schema";
 import CostInputToggle from "./cost-input-toggle";
@@ -36,12 +36,15 @@ interface UnitConfig {
   contingencyCosts: number;
   salesCosts: number;
   lawyerFees: number;
+  constructionFinancing: number;
+  useConstructionFinancing: boolean;
   hardCostsInputMethod: 'perUnit' | 'perSqFt';
   softCostsInputMethod: 'perUnit' | 'perSqFt';
   landCostsInputMethod: 'perUnit' | 'perSqFt';
   contingencyCostsInputMethod: 'perUnit' | 'perSqFt' | 'percentage';
   salesCostsInputMethod: 'perUnit' | 'perSqFt';
   lawyerFeesInputMethod: 'perUnit' | 'perSqFt';
+  constructionFinancingInputMethod: 'perUnit' | 'perSqFt';
   individualPrices: number[];
 }
 
@@ -98,12 +101,15 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
         contingencyCosts: parseFloat(unit.contingencyCosts || "0"),
         salesCosts: parseFloat(unit.salesCosts || "0"),
         lawyerFees: parseFloat(unit.lawyerFees || "0"),
+        constructionFinancing: parseFloat(unit.constructionFinancing || "0"),
+        useConstructionFinancing: unit.useConstructionFinancing || false,
         hardCostsInputMethod: (unit.hardCostsInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
         softCostsInputMethod: (unit.softCostsInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
         landCostsInputMethod: (unit.landCostsInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
         contingencyCostsInputMethod: (unit.contingencyCostsInputMethod as 'perUnit' | 'perSqFt' | 'percentage') || 'perUnit',
         salesCostsInputMethod: (unit.salesCostsInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
         lawyerFeesInputMethod: (unit.lawyerFeesInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
+        constructionFinancingInputMethod: (unit.constructionFinancingInputMethod as 'perUnit' | 'perSqFt') || 'perUnit',
         individualPrices: unit.individualPrices ? JSON.parse(unit.individualPrices) : Array(unit.quantity).fill(parseFloat(unit.salesPrice || "0")),
       }));
       setUnitConfigs(configs);
@@ -122,12 +128,15 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
         contingencyCosts: 0,
         salesCosts: 0,
         lawyerFees: 0,
+        constructionFinancing: 0,
+        useConstructionFinancing: false,
         hardCostsInputMethod: 'perUnit',
         softCostsInputMethod: 'perUnit',
         landCostsInputMethod: 'perUnit',
         contingencyCostsInputMethod: 'perUnit' as 'perUnit' | 'perSqFt' | 'percentage',
         salesCostsInputMethod: 'perUnit',
         lawyerFeesInputMethod: 'perUnit',
+        constructionFinancingInputMethod: 'perUnit',
         individualPrices: [0],
       }]);
     }
@@ -190,6 +199,12 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
     const contingencyCosts = convertCostPerMethod(config.contingencyCosts, config.contingencyCostsInputMethod, unitType.squareFootage);
     const lawyerFees = convertCostPerMethod(config.lawyerFees, config.lawyerFeesInputMethod, unitType.squareFootage);
 
+    // Add construction financing if enabled
+    let constructionFinancing = 0;
+    if (config.useConstructionFinancing) {
+      constructionFinancing = convertCostPerMethod(config.constructionFinancing, config.constructionFinancingInputMethod, unitType.squareFootage);
+    }
+
     // Use manual sales costs if provided, otherwise calculate tiered commission
     let salesCosts = convertCostPerMethod(config.salesCosts, config.salesCostsInputMethod, unitType.squareFootage);
     if (config.salesCosts === 0 && config.salesPrice > 0) {
@@ -198,7 +213,7 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
       salesCosts = (first100k * 0.05) + (balance * 0.03);
     }
 
-    const totalCosts = hardCosts + softCosts + landCosts + contingencyCosts + salesCosts + lawyerFees;
+    const totalCosts = hardCosts + softCosts + landCosts + contingencyCosts + salesCosts + lawyerFees + constructionFinancing;
     const netProfit = config.salesPrice - totalCosts;
     const margin = calculateMargin(config.salesPrice, netProfit);
 
@@ -236,12 +251,15 @@ export default function PhaseModal({ phase, isNew, projectId, isOpen, onClose, o
           contingencyCosts: config.contingencyCosts.toString(),
           salesCosts: config.salesCosts.toString(),
           lawyerFees: config.lawyerFees.toString(),
+          constructionFinancing: config.constructionFinancing.toString(),
+          useConstructionFinancing: config.useConstructionFinancing,
           hardCostsInputMethod: config.hardCostsInputMethod,
           softCostsInputMethod: config.softCostsInputMethod,
           landCostsInputMethod: config.landCostsInputMethod,
           contingencyCostsInputMethod: config.contingencyCostsInputMethod,
           salesCostsInputMethod: config.salesCostsInputMethod,
           lawyerFeesInputMethod: config.lawyerFeesInputMethod,
+          constructionFinancingInputMethod: config.constructionFinancingInputMethod,
           individualPrices: JSON.stringify(config.individualPrices || []),
         };
 

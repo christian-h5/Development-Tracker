@@ -2,7 +2,8 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calculator, Home } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Calculator, Home, Building2 } from "lucide-react";
 
 interface CostInputToggleProps {
   label: string;
@@ -22,6 +23,9 @@ interface CostInputToggleProps {
   tier1Rate?: number;
   tier2Rate?: number;
   onTierRateChange?: (tier: 1 | 2, rate: number) => void;
+  isConstructionFinancing?: boolean;
+  useConstructionFinancing?: boolean;
+  onToggleConstructionFinancing?: (enabled: boolean) => void;
 }
 
 export default function CostInputToggle({
@@ -41,7 +45,10 @@ export default function CostInputToggle({
   onLawyerFeesChange,
   tier1Rate = 5,
   tier2Rate = 3,
-  onTierRateChange
+  onTierRateChange,
+  isConstructionFinancing = false,
+  useConstructionFinancing = false,
+  onToggleConstructionFinancing
 }: CostInputToggleProps) {
   const numericValue = parseFloat(value) || 0;
 

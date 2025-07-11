@@ -138,14 +138,13 @@ export default function ProjectTracking() {
           </div>
         </CardContent>
       </Card>
-
       {/* Project Content */}
       <Tabs defaultValue="dashboard" className="w-full">
         <TabsList className="mb-6">
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="phases">Phases</TabsTrigger>
           <TabsTrigger value="unit-types">Unit Types</TabsTrigger>
-          <TabsTrigger value="defaults">Future Phase Defaults</TabsTrigger>
+          <TabsTrigger value="defaults">Future Phase Cost Defaults</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard">
@@ -168,7 +167,6 @@ export default function ProjectTracking() {
           <FuturePhaseDefaultsComponent projectId={selectedProjectId} />
         </TabsContent>
       </Tabs>
-
       <PhaseModal
         phase={selectedPhase}
         isNew={isNewPhase}
@@ -177,7 +175,6 @@ export default function ProjectTracking() {
         onClose={handleCloseModal}
         onSave={handlePhaseSaved}
       />
-
       <ProjectEditModal
         project={editingProject}
         isOpen={isProjectModalOpen}
