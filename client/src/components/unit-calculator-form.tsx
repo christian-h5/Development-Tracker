@@ -107,14 +107,14 @@ export default function UnitCalculatorForm() {
   // Update square footage when unit type changes
   useEffect(() => {
     if (selectedUnitTypeId) {
-      const unitType = unitTypes.find(ut => ut.id === selectedUnitTypeId);
+      const unitType = calculatorUnitTypes.find(ut => ut.id === selectedUnitTypeId);
       if (unitType) {
         setSquareFootage(unitType.squareFootage.toString());
       }
     }
-  }, [selectedUnitTypeId, unitTypes]);
+  }, [selectedUnitTypeId, calculatorUnitTypes]);
 
-  const selectedUnitType = unitTypes.find(ut => ut.id === selectedUnitTypeId);
+  const selectedUnitType = calculatorUnitTypes.find(ut => ut.id === selectedUnitTypeId);
 
   const convertCostPerMethod = (value: number, method: 'perUnit' | 'perSqFt' | 'percentage', sqFt: number, baseValue?: number): number => {
     if (method === 'perSqFt') {
