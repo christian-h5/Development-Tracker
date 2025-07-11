@@ -507,11 +507,11 @@ export default function UnitCalculatorForm() {
               squareFootage={parseFloat(squareFootage) || 0}
               projectName="Unit Calculator Analysis"
               costBreakdown={{
-                hardCosts: hardCost,
-                softCosts: softCost,
-                landCosts: landCost,
-                contingencyCosts: contingencyCost,
-                constructionFinancing: constructionCost,
+                hardCosts: parseFloat(hardCosts) || 0,
+                softCosts: parseFloat(softCosts) || 0,
+                landCosts: parseFloat(landCosts) || 0,
+                contingencyCosts: parseFloat(contingencyCosts) || 0,
+                constructionFinancing: parseFloat(constructionFinancing) || 0,
                 useConstructionFinancing: useConstructionFinancing
               }}
             />
